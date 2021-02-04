@@ -1,5 +1,6 @@
 package ru.jabbergames.sofswclient;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -24,12 +25,11 @@ import java.util.TimeZone;
 
 public class ChatFragment extends Fragment {
     public interface onSomeEventListenerCh {
-        public void addLog(String s);
-        public void SendCom(String comstr);
-        public void setCurrentIt(int i);
+        void addLog(String s);
+        void SendCom(String comstr);
+        void setCurrentIt(int i);
         void isChatFr();
     }
-    View vc;
     onSomeEventListenerCh someEventListener;
     @Override
     public void onAttach(Activity activity) {
@@ -40,29 +40,25 @@ public class ChatFragment extends Fragment {
             throw new ClassCastException(activity.toString() + " must implement onSomeEventListener");
         }
     }
+
     int chatminid = 2147483647;
 
-    public static final ChatFragment newInstance(String message)
-    {
-        ChatFragment f = new ChatFragment();
-        return f;
-    }
+    public static ChatFragment newInstance() { return new ChatFragment(); }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_chat, container, false);
-        vc=v;
         someEventListener.SendCom("chatmess !chroom? descr");
         someEventListener.addLog("chatmess !chroom? descr");
-        LinearLayout ll = (LinearLayout) v.findViewById(R.id.chatContent);
+        LinearLayout ll = v.findViewById(R.id.chatContent);
         if (ll.getChildCount() == 0) someEventListener.SendCom("chatmess !history");
-        Button btn = (Button) v.findViewById(R.id.chatRoomSelButt);
+        Button btn = v.findViewById(R.id.chatRoomSelButt);
         // создаем обработчик нажатия
         View.OnClickListener oclBtnCmd = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LinearLayout ll = (LinearLayout) vc.findViewById(R.id.chatContent);
+                LinearLayout ll = v.findViewById(R.id.chatContent);
                 ll.removeAllViewsInLayout();
                 someEventListener.SendCom("chatmess !chroom? list");
                 someEventListener.addLog("chatmess !chroom? list");
@@ -70,13 +66,13 @@ public class ChatFragment extends Fragment {
         };
         // присвоим обработчик кнопке
         btn.setOnClickListener(oclBtnCmd);
-        Button btncs = (Button) v.findViewById(R.id.chatSendButton);
+        Button btncs = v.findViewById(R.id.chatSendButton);
         // создаем обработчик нажатия
         View.OnClickListener oclCBtnCmd = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EditText et = (EditText) vc.findViewById(R.id.chatText);
-                TextView tv = (TextView) vc.findViewById(R.id.chatToTextView);
+                EditText et = v.findViewById(R.id.chatText);
+                TextView tv = v.findViewById(R.id.chatToTextView);
                 String disp = tv.getText().toString();
                 if (disp.length() == 0){
                     nk = "";
@@ -94,17 +90,23 @@ public class ChatFragment extends Fragment {
         return v;
     }
 
-    protected void AddChatRoomD(String chnm, String chdes, String chincount,View v) {
-            TextView tv = (TextView) v.findViewById(R.id.chatRoomName);
-            tv.setText(chnm);
-            tv = (TextView) v.findViewById(R.id.chatRoomCount);
-            tv.setText(getString(R.string.room_cnt) + chincount + getString(R.string.room_cnt_p));
-            tv = (TextView) v.findViewById(R.id.chatRoomDescr);
-            tv.setText(chdes);
+    protected void AddChatRoomD(String chatRoomName, String chatRoomDesc, String chatPeopleCount, View v) {
+            TextView tv = v.findViewById(R.id.chatRoomName);
+            tv.setText(chatRoomName);
+            tv = v.findViewById(R.id.chatRoomCount);
+            tv.setText(String.format(
+                                    "%s%s%s",
+                                    getString(R.string.room_cnt),
+                                    chatPeopleCount,
+                                    getString(R.string.room_cnt_p)
+                    )
+            );
+            tv = v.findViewById(R.id.chatRoomDescr);
+            tv.setText(chatRoomDesc);
     }
 
     protected void AddChatRoomB(String chnum, String chname, String des, String incount,View v) {
-            LinearLayout ll = (LinearLayout) v.findViewById(R.id.chatContent);
+            LinearLayout ll = v.findViewById(R.id.chatContent);
             Button btn = new Button(getActivity());
             String prom="Комната: " + chname + "  {" + incount + "чел.}\n" + des;
             btn.setText(prom);
@@ -117,7 +119,7 @@ public class ChatFragment extends Fragment {
                     String com = (String) v.getTag();
                     someEventListener.SendCom(com);
                     someEventListener.addLog(com);
-                    LinearLayout ll = (LinearLayout) vc.findViewById(R.id.chatContent);
+                    LinearLayout ll = v.findViewById(R.id.chatContent);
                     ll.removeAllViewsInLayout();
                 }
             };
@@ -128,9 +130,11 @@ public class ChatFragment extends Fragment {
             ll.addView(btn);
     }
 
-    protected void AddToChat(String from, String to, String message, String dtime, boolean priv, boolean totop, int tid, View v) {
-
-            LinearLayout ll = (LinearLayout) v.findViewById(R.id.chatContent);
+    protected void AddToChat(String from, String message, String dtime, boolean priv, boolean totop,
+                             int tid, View v) {
+            final Activity activity = getActivity();
+            if (activity == null) {return;}
+            LinearLayout ll = v.findViewById(R.id.chatContent);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -146,7 +150,7 @@ public class ChatFragment extends Fragment {
             if (ll.getChildCount() > 0) {
                 Button ghbtn = (Button) ll.getChildAt(0);
                 if (!ghbtn.getTag().toString().equals("ghbtn")) {
-                    ghbtn = new Button(getActivity());
+                    ghbtn = new Button(activity);
                     ghbtn.setBackgroundColor(0x98838383);
                     ghbtn.setLayoutParams(lp);
                     ghbtn.setGravity(Gravity.START);
@@ -157,14 +161,14 @@ public class ChatFragment extends Fragment {
                     View.OnClickListener oclBtnGhbtn = new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            LinearLayout ll = (LinearLayout) vc.findViewById(R.id.chatContent);
-                            TextView tv = new TextView(getActivity());
+                            LinearLayout ll = v.findViewById(R.id.chatContent);
+                            TextView tv = new TextView(activity);
                             tv.setText("=================");
                             tv.setGravity(Gravity.CENTER_HORIZONTAL);
                             ll.addView(tv, 1);
                             Utils.seeHist = true;
-                            someEventListener.SendCom("chatmess !history " + Integer.toString(chatminid));
-                            someEventListener.addLog("chatmess !history " + Integer.toString(chatminid));
+                            someEventListener.SendCom("chatmess !history " + chatminid);
+                            someEventListener.addLog("chatmess !history " + chatminid);
                         }
                     };
                     // присвоим обработчик кнопке
@@ -176,7 +180,7 @@ public class ChatFragment extends Fragment {
 
 
             String shou = "";
-            String smin = "";
+            String smin;
             if (!dtime.equals("none")) {
                 Calendar currentCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+5"));
                 int gmtOffset = TimeZone.getDefault().getRawOffset() - TimeZone.getTimeZone("GMT+5").getRawOffset();
@@ -192,17 +196,17 @@ public class ChatFragment extends Fragment {
 
                 currentCalendar.setTimeInMillis(currentCalendar.getTimeInMillis() + gmtOffset);
 
-                hou = (int) currentCalendar.get(Calendar.HOUR_OF_DAY);
-                min = (int) currentCalendar.get(Calendar.MINUTE);
+                hou = currentCalendar.get(Calendar.HOUR_OF_DAY);
+                min = currentCalendar.get(Calendar.MINUTE);
 
                 if (min < 10) {
-                    shou = Integer.toString(hou) + ":0" + Integer.toString(min);
+                    shou = hou + ":0" + min;
                 } else {
-                    shou = Integer.toString(hou) + ":" + Integer.toString(min);
+                    shou = hou + ":" + min;
                 }
             }
 
-            Button btn = new Button(getActivity());
+            Button btn = new Button(activity);
             btn.setBackgroundColor(0x98838383);
             btn.setLayoutParams(lp);
             btn.setGravity(Gravity.START);
@@ -212,12 +216,12 @@ public class ChatFragment extends Fragment {
                 if (Utils.toastPrMesIsAcc) {
                     String ffrom;
                     ffrom = from;
-                    Toast toastPriv = Toast.makeText(getActivity().getApplicationContext(),
+                    Toast toastPriv = Toast.makeText(activity.getApplicationContext(),
                             "Приватное сообщение от " + ffrom, Toast.LENGTH_SHORT);
                     toastPriv.setGravity(Gravity.BOTTOM, 0, 0);
                     toastPriv.show();
                 }
-                btn.setText(shou + " приватно от " + from + ":\n\r" + message);
+                btn.setText(String.format("%s приватно от %s:\n\r%s", shou, from, message));
                 btn.setTextColor(Color.parseColor("#ccff0e15"));
             } else {
                 String prom=shou+ " " + from + ":\n" + message;
@@ -244,40 +248,42 @@ public class ChatFragment extends Fragment {
             } else {
                 ll.addView(btn);
                 if (!Utils.seeHist) {
-                    ScrollView scrollView1 = (ScrollView) v.findViewById(R.id.scrollViewChat);
+                    ScrollView scrollView1 = v.findViewById(R.id.scrollViewChat);
                     scrollView1.fullScroll(ScrollView.FOCUS_DOWN);
                 }
             }
     }
 
     private String nk = "";
-    protected void showChPopupMenu(View v) {
-        PopupMenu popupMenu = new PopupMenu(getActivity(), v);
+    protected void showChPopupMenu(final View v) {
+        Activity activity = getActivity();
+        if (activity == null) {return;}
+        PopupMenu popupMenu = new PopupMenu(activity, v);
 
         //popupMenu.inflate(R.menu.popupmenu); // Для Android 4.0
         // для версии Android 3.0 нужно использовать длинный вариант
         popupMenu.getMenuInflater().inflate(R.menu.chat_pmenu, popupMenu.getMenu());
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
 
+            @SuppressLint("NonConstantResourceId")
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                    TextView tv = (TextView) vc.findViewById(R.id.chatToTextView);
+                    TextView tv = v.findViewById(R.id.chatToTextView);
                     switch (item.getItemId()) {
                         case R.id.menu1:
                             String t = tv.getText().toString();
                             String prom;
                             if (t.indexOf("Приватно ") == 0) {
                                 prom=nk + ", ";
-                                tv.setText(prom);
                             }
                             else {
                                 prom=t+ nk + ", ";
-                                tv.setText(prom);
                             }
+                            tv.setText(prom);
                             nk = tv.getText().toString();
                             return true;
                         case R.id.menu2:
-                            tv.setText("Приватно " + nk);
+                            tv.setText(String.format("Приватно %s", nk));
                             nk = "!private " + nk + " ";
                             return true;
                         case R.id.menu3:
@@ -293,7 +299,7 @@ public class ChatFragment extends Fragment {
                             return true;
                         case R.id.menu5:
                             tv.setText("");
-                            EditText et = (EditText) vc.findViewById(R.id.chatText);
+                            EditText et = v.findViewById(R.id.chatText);
                             et.setText("");
                             nk = "";
                             return true;
@@ -316,7 +322,7 @@ public class ChatFragment extends Fragment {
     }
 
     protected void ChatClearAll(View v) {
-        LinearLayout ll = (LinearLayout) v.findViewById(R.id.chatContent);
+        LinearLayout ll = v.findViewById(R.id.chatContent);
         ll.removeAllViewsInLayout();
     }
 }

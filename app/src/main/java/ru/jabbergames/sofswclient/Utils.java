@@ -20,8 +20,8 @@ public class Utils
     public static boolean toastHpIsAcc=true;
     public static boolean toastPrMesIsAcc=true;
     public static boolean toastChMesIsAcc=true;
-    public static ArrayList<String> mapC = new ArrayList<String>();
-    public static ArrayList<String> mapP = new ArrayList<String>();
+    public static final ArrayList<String> mapC = new ArrayList<>();
+    public static final ArrayList<String> mapP = new ArrayList<>();
     /**
      * Set the theme of the Activity, and restart it by creating a new Activity of the same type.
      */

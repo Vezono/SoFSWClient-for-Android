@@ -11,13 +11,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
+
+import java.util.Objects;
 
 public class CommsFragment extends Fragment {
     public interface onSomeEventListenerCom {
-        public void addLog(String s);
-        public void SendCom(String comstr);
-        public void setCurrentIt(int i);
+        void addLog(String s);
+        void SendCom(String comstr);
+        void setCurrentIt(int i);
     }
     public static final String EXTRA_MESSAGE = "EXTRA_MESSAGE";
     onSomeEventListenerCom someEventListener;
@@ -32,27 +33,25 @@ public class CommsFragment extends Fragment {
     }
     public static CommsFragment newInstance(String message)
     {
-        CommsFragment f = new CommsFragment();
-        return f;
+        return new CommsFragment();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.activity_com_buts, container, false);
-        return v;
+        return inflater.inflate(R.layout.activity_com_buts, container, false);
     }
     protected void ClearButtc() {
         if (getView() != null) {
-            LinearLayout ll = (LinearLayout) getView().findViewById(R.id.ComButtLay);
+            LinearLayout ll = getView().findViewById(R.id.ComButtLay);
             ll.removeAllViewsInLayout();
         }
     }
 
     protected void AddButC(String kay, String txt,View v) {
         if(!Utils.flag) {
-            if (txt != "") {
-                LinearLayout ll = (LinearLayout) v.findViewById(R.id.ComButtLay);
+            if (!Objects.equals(txt, "")) {
+                LinearLayout ll = v.findViewById(R.id.ComButtLay);
                 Button btn = new Button(getActivity());
                 LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,

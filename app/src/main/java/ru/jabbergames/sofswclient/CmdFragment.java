@@ -13,9 +13,11 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import java.util.Objects;
+
 public class CmdFragment extends Fragment {
     public interface onSomeEventListenerCmd {
-        public void SendCom(String comstr);
+        void SendCom(String comstr);
     }
 
     onSomeEventListenerCmd someEventListener;
@@ -32,10 +34,9 @@ public class CmdFragment extends Fragment {
     View vv;
     Button btnCmdSend;
     Button btnCmdClear;
-    public static final CmdFragment newInstance(String message)
+    public static CmdFragment newInstance(String message)
     {
-        CmdFragment f = new CmdFragment();
-        return f;
+        return new CmdFragment();
     }
 
     @Override
@@ -43,15 +44,15 @@ public class CmdFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_cmd, container, false);
         vv=v;
-        btnCmdSend = (Button) v.findViewById(R.id.cmdSendButton);
-        btnCmdClear=(Button)v.findViewById(R.id.cmdClearButton);
+        btnCmdSend = v.findViewById(R.id.cmdSendButton);
+        btnCmdClear= v.findViewById(R.id.cmdClearButton);
         // создаем обработчик нажатия
         View.OnClickListener oclBtnCmd = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EditText mCmdText = (EditText) vv.findViewById(R.id.cmdText);
+                EditText mCmdText = vv.findViewById(R.id.cmdText);
                 String scom = mCmdText.getText().toString();
-                if (scom != "") {
+                if (!Objects.equals(scom, "")) {
                     someEventListener.SendCom(mCmdText.getText().toString());
                     addLog(mCmdText.getText().toString());
                 }
@@ -62,7 +63,7 @@ public class CmdFragment extends Fragment {
         View.OnClickListener oclBtnCmdClr = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TextView mCmdText = (TextView)vv.findViewById(R.id.logTextView);
+                TextView mCmdText = vv.findViewById(R.id.logTextView);
                 if (mCmdText != null) {
                     mCmdText.setText("");
                 }
@@ -73,13 +74,13 @@ public class CmdFragment extends Fragment {
         btnCmdSend.setOnClickListener(oclBtnCmd);
 
         //авторпрокрутка
-        TextView textView1 = (TextView) v.findViewById(R.id.logTextView);
+        TextView textView1 = v.findViewById(R.id.logTextView);
         textView1.addTextChangedListener(new TextWatcher() {
 
             @Override
             public void afterTextChanged(Editable arg0) {
 
-                ScrollView scrollView1 = (ScrollView) vv.findViewById(R.id.scrollViewCons);
+                ScrollView scrollView1 = vv.findViewById(R.id.scrollViewCons);
                 scrollView1.fullScroll(ScrollView.FOCUS_DOWN);
                 // you can add a toast or whatever you want here
             }
@@ -103,7 +104,7 @@ public class CmdFragment extends Fragment {
     }
     public void addLog(String addstr) {
         if (getView() != null) {
-            TextView mCmdText = (TextView) getView().findViewById(R.id.logTextView);
+            TextView mCmdText = getView().findViewById(R.id.logTextView);
             if (mCmdText != null) {
                 mCmdText.append("\n\r" + addstr);
                 countLogMes++;

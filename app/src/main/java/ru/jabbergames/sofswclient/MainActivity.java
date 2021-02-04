@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -42,8 +41,10 @@ import org.w3c.dom.NodeList;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -57,19 +58,16 @@ import ru.jabbergames.sofswclient.CommsFragment.onSomeEventListenerCom;
 import ru.jabbergames.sofswclient.GameFragment.onSomeEventListenerGm;
 public class MainActivity extends FragmentActivity implements onSomeEventListenerCh,onSomeEventListenerGm,onSomeEventListenerCom,onSomeEventListenerCmd {
 
-    AsyncTask<?, ?, ?> runningTask;
+    // AsyncTask<?, ?, ?> runningTask;
 
     private static final int RC_SIGN_IN = 0;
     private String deviceId;
-    private String ClVer = "a.1.0.7.7";
-    private int STextEditID;
+    // private int STextEditID;
     private Timer mTimer;
-    private MyTimerTask mMyTimerTask;
-    private boolean seeHist=false;
     PagerTabStrip titlestrip;
     int countNewMessage=0;
-    String[] title = {"\uD83C\uDFAE ИГРА", "⚙️ КОМАНДЫ", "\uD83D\uDCAC ЧАТ", "\uD83D\uDD27 КОНСОЛЬ"};
-    private List<String> ReqGm = new ArrayList<String>();
+    final String[] title = {"\uD83C\uDFAE ИГРА", "⚙️ КОМАНДЫ", "\uD83D\uDCAC ЧАТ", "\uD83D\uDD27 КОНСОЛЬ"};
+    private final List<String> ReqGm = new ArrayList<>();
     private int tick = 0;
     private int tock = 0;
     ViewPager pager;
@@ -107,26 +105,25 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
         chatFr=(ChatFragment)fragments.get(2);
         cmdFr=(CmdFragment)fragments.get(3);
         pageAdapter = new MyPageAdapter(getSupportFragmentManager(), fragments);
-        pager = (ViewPager)findViewById(R.id.viewpager);
-        titlestrip=(PagerTabStrip)findViewById(R.id.titlestrip);
+        pager = findViewById(R.id.viewpager);
+        titlestrip= findViewById(R.id.titlestrip);
         if(!Utils.isLight){
             pager.setBackgroundResource(R.drawable.background_d);
             titlestrip.setTextColor(Color.WHITE);
-            titlestrip.setBackgroundColor(Color.TRANSPARENT);
-        }else{
+        }
+        else{
             pager.setBackgroundResource(R.drawable.background_l);
             titlestrip.setTextColor(Color.BLACK);
-            titlestrip.setBackgroundColor(Color.TRANSPARENT);
         }
-        if(Build.VERSION.SDK_INT>Build.VERSION_CODES.GINGERBREAD_MR1){
-        pager.setPageTransformer(true, new ZoomOutPageTransformer());}
+        titlestrip.setBackgroundColor(Color.TRANSPARENT);
+        pager.setPageTransformer(true, new ZoomOutPageTransformer());
         pager.setAdapter(pageAdapter);
         pager.setOffscreenPageLimit(4);
         if (mTimer != null) {
             mTimer.cancel();
         }
         mTimer = new Timer();
-        mMyTimerTask = new MyTimerTask();
+        MyTimerTask mMyTimerTask = new MyTimerTask();
 
         mTimer.schedule(mMyTimerTask, 1100, 1100);
         SendCom("0");
@@ -155,6 +152,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
 
             // Signed in successfully, show authenticated UI.
             //updateUI(account);
+            assert account != null;
             setDeviceId(account.getEmail()+"|"+account.getId());
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
@@ -181,6 +179,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
     public void setCurrentIt(int i) {
         pager.setCurrentItem(i);
     }
+
     class MyTimerTask extends TimerTask {
         @Override
         public void run() {
@@ -219,12 +218,12 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
     }
 
     private void ClearGLL() {
-        LinearLayout ll = (LinearLayout) findViewById(R.id.GameLinearLayout);
+        LinearLayout ll = findViewById(R.id.GameLinearLayout);
         ll.removeAllViewsInLayout();
     }
 
-    private void  AddLnkButt(String kay, String txt) {
-        LinearLayout ll = (LinearLayout) findViewById(R.id.GameLinearLayout);
+    private void AddLnkButt(String kay, String txt) {
+        LinearLayout ll = findViewById(R.id.GameLinearLayout);
         Button btn = new Button(this);
         btn.setText(kay);
         btn.setTag(txt);
@@ -257,15 +256,20 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
             }
         }
     }
+
     public void RespPars(String resp) {
         if(resp.indexOf("error")==0){
             cmdFr.addLog("Ошибка. Проверьте, пожалуйста, соединение интернет.");
             //tabHost.setCurrentTabByTag(tabTags[3]);
-        } else {
+        }
+        else {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             try {
                 DocumentBuilder db = docFactory.newDocumentBuilder();
-                InputStream is = new ByteArrayInputStream(resp.getBytes("UTF-8"));
+                InputStream is = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                    is = new ByteArrayInputStream(resp.getBytes(StandardCharsets.UTF_8));
+                }
                 Document document = db.parse(is);
 
                 NodeList nodes = document.getElementsByTagName("resp");
@@ -292,10 +296,8 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                         for (int l = 0; l < lnodes.getLength(); l++) {
                                                             try {
                                                                 Element gelement = (Element) lnodes.item(l);
-                                                                switch (gelement.getNodeName()) {
-                                                                    case "lynk":
-                                                                        AddLnkButt(gelement.getAttribute("text"), gelement.getAttribute("a"));
-                                                                        break;
+                                                                if ("lynk".equals(gelement.getNodeName())) {
+                                                                    AddLnkButt(gelement.getAttribute("text"), gelement.getAttribute("a"));
                                                                 }
                                                             } catch (Exception e) {
                                                                 // TODO: handle exception
@@ -321,12 +323,13 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                                 // TODO: handle exception
                                                             }
                                                         }
-                                                        gmFr.AddButG(kay, ctxt,gmFr.getView(),titlestrip);
+                                                        gmFr.AddButG(kay, ctxt,gmFr.getView());
                                                         cmdFr.addLog(kay + "- " + ctxt);
                                                         //cont = true;
                                                         break;
                                                     case "point":
-                                                        gmFr.UpdateMap(melement.getAttribute("x"), melement.getAttribute("y"), melement.getAttribute("code"),gmFr.getView());
+                                                        gmFr.UpdateMap(melement.getAttribute("x"), melement.getAttribute("y"), melement.getAttribute("code"),
+                                                                Objects.requireNonNull(gmFr.getView()));
                                                         break;
                                                 }
                                             } catch (Exception e) {
@@ -340,7 +343,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                         String mtext = "";
                                         String dtime = "";
                                         int tid = 1;
-                                        boolean totop = false;
+                                        boolean totop;
                                         NodeList cmnodes = nodes.item(i).getChildNodes();
                                         for (int j = 0; j < cmnodes.getLength(); j++) {
                                             try {
@@ -371,39 +374,25 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                 // TODO: handle exception
                                             }
                                         }
-                                        if((from!="")&(mtext!="")) {
+                                        if((!from.equals(""))&(!mtext.equals(""))) {
                                             try {
-                                                switch (element.getAttribute("totop")) {
-                                                    case "1":
-                                                        totop = true;
-                                                        //histloadproc = false;
-                                                        //callhistoryVisibility(Windows.UI.Xaml.Visibility.Collapsed);
-                                                        break;
-                                                    default:
-                                                        totop = false;
-                                                        break;
-                                                }
+                                                //histloadproc = false;
+                                                //callhistoryVisibility(Windows.UI.Xaml.Visibility.Collapsed);
+                                                totop = "1".equals(element.getAttribute("totop"));
                                             } catch (Exception e) {
                                                 totop = false;
                                             }
 
                                             try {
-                                                switch (element.getAttribute("room")) {
-                                                    case "private":
-                                                        chatFr.AddToChat(from, to, mtext, dtime, true, totop, tid, chatFr.getView());
-                                                        break;
-                                                    default:
-                                                        chatFr.AddToChat(from, to, mtext, dtime, false, totop, tid, chatFr.getView());
-                                                        break;
-                                                }
-                                            } catch (Exception e) {
-                                                totop = false;
-                                            }
+                                                chatFr.AddToChat(from, mtext, dtime,
+                                                        "private".equals(element.getAttribute("room")),
+                                                        totop, tid, chatFr.getView());
+                                            } catch (Exception ignored) {}
                                         }
                                         break;
                                     case "chatrooms":
                                         //cont = true;
-                                        chatFr.ChatClearAll(chatFr.getView());
+                                        chatFr.ChatClearAll(Objects.requireNonNull(chatFr.getView()));
                                         NodeList crnodes = nodes.item(i).getChildNodes();
                                         for (int j = 0; j < crnodes.getLength(); j++) {
                                             try {
@@ -464,7 +453,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                 // TODO: handle exception
                                             }
                                         }
-                                        chatFr.AddChatRoomD(chnm, chdes, chincount,chatFr.getView());
+                                        chatFr.AddChatRoomD(chnm, chdes, chincount, Objects.requireNonNull(chatFr.getView()));
                                         break;
                                     case "mappoints":
                                         Utils.mapP.clear();
@@ -473,11 +462,9 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                         for (int j = 0; j < mpnodes.getLength(); j++) {
                                             try {
                                                 Element melement = (Element) mpnodes.item(j);
-                                                switch (melement.getNodeName()) {
-                                                    case "mpt":
-                                                        Utils.mapC.add(melement.getAttribute("x") + ":" + melement.getAttribute("y"));
-                                                        Utils.mapP.add(melement.getAttribute("c"));
-                                                        break;
+                                                if ("mpt".equals(melement.getNodeName())) {
+                                                    Utils.mapC.add(melement.getAttribute("x") + ":" + melement.getAttribute("y"));
+                                                    Utils.mapP.add(melement.getAttribute("c"));
                                                 }
 
                                             } catch (Exception e) {
@@ -645,7 +632,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
 
 
     public void SendComN(String cstr) {
-        if (cstr != "") {
+        if (!cstr.equals("")) {
             //addLog("<---");
             new LongOperation() {
                 @Override
@@ -662,53 +649,41 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
 
     public String SpecialXmlEscapeEnc(String input)
     {
-        String strXmlText = input;
-
-        int p = strXmlText.indexOf(":amp:#");
+        int p = input.indexOf(":amp:#");
         while (p > -1) {
             try
             {
-                int e = strXmlText.indexOf(";", p);
-                String st = strXmlText.substring(p + 6, e);
+                int e = input.indexOf(";", p);
+                String st = input.substring(p + 6, e);
                 int c = Integer.parseInt(st);
-                String pat = strXmlText.substring(p, e + 1);
+                String pat = input.substring(p, e + 1);
                 char ch = (char)c;
                 String rep = String.valueOf(ch);
-                strXmlText = strXmlText.replace(pat, rep);
+                input = input.replace(pat, rep);
             }
             catch (Exception ex)
             {
-                int e = strXmlText.indexOf(";", p);
-                String st = strXmlText.substring(p + 6, e);
-                strXmlText = strXmlText.replace(":amp:#" + st + ";", "?");
+                int e = input.indexOf(";", p);
+                String st = input.substring(p + 6, e);
+                input = input.replace(":amp:#" + st + ";", "?");
             }
-            p = strXmlText.indexOf(":amp:#");
+            p = input.indexOf(":amp:#");
         }
 
-        return strXmlText;
+        return input;
     }
 
     public String SpecialXmlEscape(String input)
     {
-        String strXmlText = "";
-
-        /*if (string.IsNullOrEmpty(input))
-            return input;*/
-
-
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < input.length(); ++i)
         {
-            int c = (int)input.charAt(i);
-            if ((c > 47 && c < 126) || (c > 31 && c < 38) || (c > 1024 && c < 1279) || (c==42)) sb.append((char)input.charAt(i)); else sb.append(":amp:#" + c + ";");
+            int c = input.charAt(i);
+            if ((c > 47 && c < 126) || (c > 31 && c < 38) || (c > 1024 && c < 1279) || (c==42)) sb.append(input.charAt(i)); else sb.append(":amp:#").append(c).append(";");
         }
 
-        strXmlText = sb.toString();
-        //sb.clear();
-        sb = null;
-
-        return strXmlText;
+        return sb.toString();
     }
 
 
@@ -722,10 +697,11 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
 
             try
             {
-                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+                List<NameValuePair> nameValuePairs = new ArrayList<>();
                 nameValuePairs.add(new BasicNameValuePair("i", getDeviceId()));
                 nameValuePairs.add(new BasicNameValuePair("j", params[0]));
-                nameValuePairs.add(new BasicNameValuePair("v", ClVer));
+                String clVer = "a.1.0.7.7";
+                nameValuePairs.add(new BasicNameValuePair("v", clVer));
                 httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs,HTTP.UTF_8));
                 HttpResponse response = httpclient.execute(httppost);
 
@@ -774,17 +750,17 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
     }
 
     private List<Fragment> getFragments(){
-        List<Fragment> fList = new ArrayList<Fragment>();
+        List<Fragment> fList = new ArrayList<>();
 
-        fList.add(GameFragment.newInstance("Игра"));
+        fList.add(GameFragment.newInstance());
         fList.add(CommsFragment.newInstance("Команды"));
-        fList.add(ChatFragment.newInstance("Чат"));
+        fList.add(ChatFragment.newInstance());
         fList.add(CmdFragment.newInstance("Консоль"));
         return fList;
     }
 
     private class MyPageAdapter extends FragmentPagerAdapter {
-        private List<Fragment> fragments;
+        private final List<Fragment> fragments;
 
 
         public MyPageAdapter(FragmentManager fm, List<Fragment> fragments) {
@@ -794,8 +770,6 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
         @Override
         public Fragment getItem(int position) {
             switch(position){
-                case 0:
-                    return this.fragments.get(0);
                 case 1:
                     SendCom("getcomms");
                     return this.fragments.get(1);
