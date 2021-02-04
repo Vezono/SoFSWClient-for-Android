@@ -1,36 +1,32 @@
-<LinearLayout
-    android:orientation="vertical"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:gravity="bottom">
+    android:gravity="bottom"
+    android:orientation="vertical">
 
     <ScrollView
+        android:id="@+id/scrollViewCons"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/scrollViewCons"
         android:layout_gravity="top">
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:id="@+id/logTextView"
-                android:text="========="
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
             <EditText
+                android:id="@+id/cmdText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/cmdText"
-                android:singleLine="true"
-                android:hint="@string/cmdHint" />
+                android:hint="@string/cmdHint"
+                android:inputType="text"
+                android:singleLine="true" />
 
             <LinearLayout
-                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/cmdSendButton"
@@ -52,6 +48,12 @@
                     android:background="#98838383"
                     android:text="@string/clr" />
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/logTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="=========" />
 
         </LinearLayout>
     </ScrollView>

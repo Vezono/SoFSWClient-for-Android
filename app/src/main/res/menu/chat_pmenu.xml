@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:id="@+id/menugroup1" >
+    <group android:id="@+id/menugroup1">
         <item
             android:id="@+id/menu1"
-            android:title="@string/chatMenuNickToMess"/>
+            android:title="@string/chatMenuNickToMess" />
         <item
             android:id="@+id/menu2"
-            android:title="@string/chatMenuPrivateMess"/>
+            android:title="@string/chatMenuPrivateMess" />
         <item
             android:id="@+id/menu3"
-            android:title="@string/chatMenuPersInfo"/>
+            android:title="@string/chatMenuPersInfo" />
 
         <item
             android:id="@+id/menu4"
-            android:title="@string/chatMenuWho"/>
+            android:title="@string/chatMenuWho" />
 
         <item
             android:id="@+id/menu5"
-            android:title="@string/chatMenuClear"/>
+            android:title="@string/chatMenuClear" />
 
     </group>
 
