@@ -70,8 +70,10 @@ public class ChatFragment extends Fragment {
         View.OnClickListener oclCBtnCmd = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EditText et = v.findViewById(R.id.chatText);
-                TextView tv = v.findViewById(R.id.chatToTextView);
+                EditText et = getActivity().findViewById(R.id.chatText);
+
+                TextView tv = getActivity().findViewById(R.id.chatToTextView);
+
                 String disp = tv.getText().toString();
                 if (disp.length() == 0) {
                     nk = "";

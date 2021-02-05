@@ -21,13 +21,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/chatSendButton"
-                    style="?android:attr/buttonStyleSmall"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/send" />
-
                 <EditText
                     android:id="@+id/chatText"
                     android:layout_width="match_parent"
@@ -35,6 +28,13 @@
                     android:hint="@string/chatHint"
                     android:inputType="textMultiLine"
                     android:singleLine="false" />
+
+                <Button
+                    android:id="@+id/chatSendButton"
+                    style="?android:attr/buttonStyleSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/send" />
 
                 <LinearLayout
                     android:id="@+id/chatContent"

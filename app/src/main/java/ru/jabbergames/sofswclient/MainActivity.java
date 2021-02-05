@@ -135,7 +135,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
             setDeviceId(account.getEmail() + "|" + account.getId());
         }
         catch (ApiException e) {
-            cmdFr.addLog(String.format("Ошибка входа в Google. Код ошибки: %s %s",
+            cmdFr.addLog(String.format("Ошибка входа в Google. Код ошибки: %s Сообщение: %s",
                     e.getStatusCode(),
                     e.getMessage()));
         }
