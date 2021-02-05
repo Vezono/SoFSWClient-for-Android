@@ -290,15 +290,13 @@ public class GameFragment extends Fragment {
 
     protected void SetPHP(String hpdes, String hp, String hpmax) {
         View view = getView();
-        if (view == null) {
-            return;
-        }
+        if (view == null) { return; }
         TextView tv = view.findViewById(R.id.progress_hp_text);
         tv.setText(String.format("%s%s/%s", hpdes, hp, hpmax));
         if (Utils.toastHpIsAcc) {
             if (hp.equals(hpmax) & uot) {
                 uot = false;
-                Toast toastPriv = Toast.makeText(Objects.requireNonNull(getActivity()).getApplicationContext(),
+                Toast toastPriv = Toast.makeText(getActivity().getApplicationContext(),
                         "Жизни героя восстановлены!", Toast.LENGTH_SHORT);
                 toastPriv.setGravity(Gravity.BOTTOM, 0, 0);
                 toastPriv.show();
@@ -307,7 +305,7 @@ public class GameFragment extends Fragment {
                 uot = true;
             }
         }
-        ProgressBar pb = getView().findViewById(R.id.progressBarHP);
+        ProgressBar pb = view.findViewById(R.id.progressBarHP);
         pb.setMax(Integer.parseInt(hpmax));
         pb.setProgress(Integer.parseInt(hp));
     }
