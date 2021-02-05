@@ -324,9 +324,7 @@ public class GameFragment extends Fragment {
 
     protected void SetPPT(String ptdes, String pt, String ptmax) {
         View view = getView();
-        if (view == null) {
-            return;
-        }
+        if (view == null) { return; }
         String shpt = pt;
         if (pt.length() > 5) {
             shpt = pt.substring(0, pt.length() - 3) + "k";
@@ -341,9 +339,7 @@ public class GameFragment extends Fragment {
 
     protected void SetAtten(String p) {
         View view = getView();
-        if (view == null) {
-            return;
-        }
+        if (view == null) { return; }
         TextView tv = view.findViewById(R.id.player_atten_text);
         String text = p.contains("1") ? getString(R.string.level_up_atten) : "";
         tv.setText(text);
@@ -424,6 +420,7 @@ public class GameFragment extends Fragment {
             chatMes.setText("");
             countNewMessage = 0;
         } else countNewMessage += 1;
+
         if (chatMes != null) {
             if (countNewMessage != 0) {
                 String prom = getString(R.string.ChatMessCounter) + countNewMessage;
@@ -434,23 +431,17 @@ public class GameFragment extends Fragment {
 
     protected void ClearButtc() {
         View view = getView();
-        if (view != null) {
-            LinearLayout ll = view.findViewById(R.id.comsButtsLinearLayout);
-            ll.removeAllViewsInLayout();
-        }
+        if (view == null) { return; }
+
+        LinearLayout ll = view.findViewById(R.id.comsButtsLinearLayout);
+        ll.removeAllViewsInLayout();
     }
 
     protected void AddButC(String kay, String txt, View v) {
-        if (Utils.flag) {
-            return;
-        }
-        if (txt.equals("")) {
-            return;
-        }
+        if (Utils.flag) { return; }
+        if (txt.equals("")) { return; }
         FragmentActivity activity = getActivity();
-        if (activity == null) {
-            return;
-        }
+        if (activity == null) { return; }
 
         Button btn = new Button(activity);
         int sizeInDp = (int) TypedValue.applyDimension(
