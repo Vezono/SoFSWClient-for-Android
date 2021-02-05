@@ -161,7 +161,7 @@ public class GameFragment extends Fragment {
                 View.OnClickListener oclBtnCmdS = new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        EditText mCmdText = vc.findViewById(STextEditID);
+                        EditText mCmdText = getActivity().findViewById(STextEditID);
                         String scom = mCmdText.getText().toString();
                         if (scom.equals("")) {
                             scom = "0";

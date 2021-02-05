@@ -46,7 +46,7 @@ public class CommsFragment extends Fragment {
     }
 
     protected void AddButC(String kay, String txt, View v) {
-        if (Utils.flag) { return; }
+        if (!Utils.flag) { return; }
         if (Objects.equals(txt, "")) { return; }
 
         LinearLayout ll = v.findViewById(R.id.ComButtLay);
