@@ -103,17 +103,16 @@ public class CmdFragment extends Fragment {
     }
 
     public void addLog(String addstr) {
-        if (getView() != null) {
-            TextView mCmdText = getView().findViewById(R.id.logTextView);
-            if (mCmdText != null) {
-                mCmdText.append("\n\r" + addstr);
-                countLogMes++;
-                if (countLogMes > 300) {
-                    mCmdText.setText("");
-                    countLogMes = 0;
-                }
-            }
-        }
+        if (getView() == null) { return; }
+        TextView mCmdText = getView().findViewById(R.id.logTextView);
+        if (mCmdText == null) { return; }
+
+        mCmdText.append("\n\r" + addstr);
+        countLogMes++;
+        if (countLogMes <= 300) { return; }
+
+        mCmdText.setText("");
+        countLogMes = 0;
     }
 
     public interface onSomeEventListenerCmd {

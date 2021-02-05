@@ -7,7 +7,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -23,6 +22,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -56,7 +56,7 @@ public class GameFragment extends Fragment {
 
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
             someEventListenerGm = (onSomeEventListenerGm) context;
@@ -153,11 +153,7 @@ public class GameFragment extends Fragment {
                 //добавить поле ввода
                 EditText et = new EditText(getActivity());
                 et.setHint(txt);
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    STextEditID = someEventListenerGm.generateViewId();
-                } else {
-                    STextEditID = View.generateViewId();
-                }
+                STextEditID = View.generateViewId();
                 et.setId(STextEditID);
                 ll.addView(et);
 
@@ -281,17 +277,15 @@ public class GameFragment extends Fragment {
     }
 
     protected void SetPname(String nm) {
-        if (getView() != null) {
-            TextView tv = getView().findViewById(R.id.player_name_text);
-            tv.setText(nm);
-        }
+        if (getView() == null) { return; }
+        TextView tv = getView().findViewById(R.id.player_name_text);
+        tv.setText(nm);
     }
 
     protected void SetPlev(String de, String lv) {
-        if (getView() != null) {
-            TextView tv = getView().findViewById(R.id.player_lev_text);
-            tv.setText(String.format("  %s%s", de, lv));
-        }
+        if (getView() == null) { return; }
+        TextView tv = getView().findViewById(R.id.player_lev_text);
+        tv.setText(String.format("  %s%s", de, lv));
     }
 
     protected void SetPHP(String hpdes, String hp, String hpmax) {
@@ -308,7 +302,8 @@ public class GameFragment extends Fragment {
                         "Жизни героя восстановлены!", Toast.LENGTH_SHORT);
                 toastPriv.setGravity(Gravity.BOTTOM, 0, 0);
                 toastPriv.show();
-            } else if (!hp.equals(hpmax)) {
+            }
+            else if (!hp.equals(hpmax)) {
                 uot = true;
             }
         }
@@ -387,6 +382,7 @@ public class GameFragment extends Fragment {
         int vmc = iv.getHeight() / 2;
         int hdc = hmc / rz;
         int vdc = vmc / rz;
+
         for (int i = (-1 * hdc - 1); i <= hdc; i++) {
             for (int j = (-1 * vdc); j <= vdc + 1; j++) {
                 tx = Integer.toString(cx + i);
@@ -394,12 +390,7 @@ public class GameFragment extends Fragment {
                 int pt = Utils.mapC.indexOf(tx + ":" + ty);
                 if (pt > -1) {
                     Resources r = getResources();
-                    String gogo;
-                    if (Utils.isLight) {
-                        gogo = "_l";
-                    } else {
-                        gogo = "_d";
-                    }
+                    String gogo = Utils.isLight ? "_1" : "_d";
                     try {
                         Class<R.drawable> res = R.drawable.class;
                         Field field = res.getField(Utils.mapP.get(pt) + gogo);
@@ -408,12 +399,11 @@ public class GameFragment extends Fragment {
                         //image.setPremultiplied(true);
                         //image.setHasAlpha(true);
                         tempCanvas.drawBitmap(image, hmc + i * rz, vmc - j * rz, transparentpaint);
-                    } catch (Exception ignored) {
                     }
+                    catch (Exception ignored) { }
                 }
             }
         }
-        image = BitmapFactory.decodeResource(getResources(), R.drawable.s01_l);
         tempCanvas.drawBitmap(image, hmc, vmc, transparentpaint);
         iv.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
 
@@ -467,11 +457,7 @@ public class GameFragment extends Fragment {
         Button btn = new Button(activity);
         int sizeInDp = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, 43, getResources().getDisplayMetrics());
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-            btn.setBackground(ContextCompat.getDrawable(activity, R.drawable.buttonroundbg));
-        } else {
-            btn.setBackground(ContextCompat.getDrawable(activity, R.drawable.buttonroundbg));
-        }
+        btn.setBackground(ContextCompat.getDrawable(activity, R.drawable.buttonroundbg));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(sizeInDp, sizeInDp);
         lp.setMargins(0, 6, 0, 6);
         btn.setLayoutParams(lp);
