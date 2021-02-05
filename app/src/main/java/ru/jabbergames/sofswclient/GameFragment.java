@@ -50,7 +50,7 @@ public class GameFragment extends Fragment {
     };
     private boolean uot;
 
-    public static GameFragment newInstance() {
+    public static GameFragment newInstance(String message) {
         return new GameFragment();
     }
 

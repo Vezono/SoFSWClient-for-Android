@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import java.util.Objects;
@@ -28,7 +29,7 @@ public class CmdFragment extends Fragment {
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
             someEventListener = (onSomeEventListenerCmd) context;

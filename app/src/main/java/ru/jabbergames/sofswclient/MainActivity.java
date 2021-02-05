@@ -1,5 +1,6 @@
 package ru.jabbergames.sofswclient;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -154,7 +156,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
 
             // Signed in successfully, show authenticated UI.
             //updateUI(account);
-            assert account != null;
+            // assert account != null;
             setDeviceId(account.getEmail() + "|" + account.getId());
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
@@ -228,367 +230,322 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
         if (resp.indexOf("error") == 0) {
             cmdFr.addLog("Ошибка. Проверьте, пожалуйста, соединение интернет.");
             //tabHost.setCurrentTabByTag(tabTags[3]);
-        } else {
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            try {
-                DocumentBuilder db = docFactory.newDocumentBuilder();
-                InputStream is = null;
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-                    is = new ByteArrayInputStream(resp.getBytes(StandardCharsets.UTF_8));
-                }
-                Document document = db.parse(is);
+            return;
+        }
 
-                NodeList nodes = document.getElementsByTagName("resp");
-                nodes = nodes.item(0).getChildNodes();
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        try {
+            DocumentBuilder db = docFactory.newDocumentBuilder();
+            InputStream is = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                is = new ByteArrayInputStream(resp.getBytes(StandardCharsets.UTF_8));
+            }
+            Document document = db.parse(is);
 
-                for (int i = 0; i < nodes.getLength(); i++) {
-                    try {
-                        Element element = (Element) nodes.item(i);
-                        switch (element.getNodeName()) {
-                            case "mess":
-                                switch (element.getAttribute("type")) {
-                                    case "game":
-                                        cmdFr.addLog("--->");
-                                        ClearGLL();
-                                        NodeList mnodes = nodes.item(i).getChildNodes();
-                                        for (int j = 0; j < mnodes.getLength(); j++) {
-                                            try {
-                                                Element melement = (Element) mnodes.item(j);
-                                                switch (melement.getNodeName()) {
-                                                    case "text":
-                                                        cmdFr.addLog(melement.getTextContent());
-                                                        gmFr.AddGText(melement.getTextContent(), gmFr.getView());
-                                                        NodeList lnodes = mnodes.item(j).getChildNodes();
-                                                        for (int l = 0; l < lnodes.getLength(); l++) {
-                                                            try {
-                                                                Element gelement = (Element) lnodes.item(l);
-                                                                if ("lynk".equals(gelement.getNodeName())) {
-                                                                    AddLnkButt(gelement.getAttribute("text"), gelement.getAttribute("a"));
-                                                                }
-                                                            } catch (Exception e) {
-                                                                // TODO: handle exception
-                                                            }
-                                                        }
-                                                        break;
-                                                    case "comm":
-                                                        String kay = "";
-                                                        String ctxt = "";
-                                                        NodeList gnodes = mnodes.item(j).getChildNodes();
-                                                        for (int l = 0; l < gnodes.getLength(); l++) {
-                                                            try {
-                                                                Element gelement = (Element) gnodes.item(l);
-                                                                switch (gelement.getNodeName()) {
-                                                                    case "kay":
-                                                                        kay = gelement.getTextContent();
-                                                                        break;
-                                                                    case "ctxt":
-                                                                        ctxt = gelement.getTextContent();
-                                                                        break;
-                                                                }
-                                                            } catch (Exception e) {
-                                                                // TODO: handle exception
-                                                            }
-                                                        }
-                                                        gmFr.AddButG(kay, ctxt, gmFr.getView());
-                                                        cmdFr.addLog(kay + "- " + ctxt);
-                                                        //cont = true;
-                                                        break;
-                                                    case "point":
-                                                        gmFr.UpdateMap(melement.getAttribute("x"), melement.getAttribute("y"), melement.getAttribute("code"),
-                                                                Objects.requireNonNull(gmFr.getView()));
-                                                        break;
-                                                }
-                                            } catch (Exception e) {
-                                                // TODO: handle exception
-                                            }
-                                        }
-                                    case "chat":
-                                        //cont = true;
-                                        String from = "";
-                                        String to = "";
-                                        String mtext = "";
-                                        String dtime = "";
-                                        int tid = 1;
-                                        boolean totop;
-                                        NodeList cmnodes = nodes.item(i).getChildNodes();
-                                        for (int j = 0; j < cmnodes.getLength(); j++) {
-                                            try {
-                                                Element gelement = (Element) cmnodes.item(j);
-                                                switch (gelement.getNodeName()) {
-                                                    case "from":
-                                                        from = gelement.getTextContent();
-                                                        break;
-                                                    case "mtext":
-                                                        mtext = SpecialXmlEscapeEnc(gelement.getTextContent());
-                                                        break;
-                                                    case "dtime":
-                                                        dtime = gelement.getTextContent();
-                                                        //if (dtime.indexOf("none") == 0) dtime = "";
-                                                        break;
-                                                    case "mid":
-                                                        String ts = gelement.getTextContent();
-                                                        tid = Integer.parseInt(ts);
-                                                        //if (chatminid > tid) chatminid = tid;
-                                                        break;
-                                                    default:
-                                                        break;
-                                                }
-                                            } catch (Exception e) {
-                                                // TODO: handle exception
-                                            }
-                                        }
-                                        if ((!from.equals("")) & (!mtext.equals(""))) {
-                                            try {
-                                                //histloadproc = false;
-                                                //callhistoryVisibility(Windows.UI.Xaml.Visibility.Collapsed);
-                                                totop = "1".equals(element.getAttribute("totop"));
-                                            } catch (Exception e) {
-                                                totop = false;
-                                            }
+            NodeList nodes = document.getElementsByTagName("resp");
+            nodes = nodes.item(0).getChildNodes();
 
-                                            try {
-                                                chatFr.AddToChat(from, mtext, dtime,
-                                                        "private".equals(element.getAttribute("room")),
-                                                        totop, tid, chatFr.getView());
-                                            } catch (Exception ignored) {
-                                            }
-                                        }
-                                        break;
-                                    case "chatrooms":
-                                        //cont = true;
-                                        chatFr.ChatClearAll(Objects.requireNonNull(chatFr.getView()));
-                                        NodeList crnodes = nodes.item(i).getChildNodes();
-                                        for (int j = 0; j < crnodes.getLength(); j++) {
-                                            try {
-                                                String chnum = "";
-                                                String chname = "";
-                                                String des = "";
-                                                String incount = "";
-                                                NodeList lnodes = crnodes.item(j).getChildNodes();
-                                                for (int l = 0; l < lnodes.getLength(); l++) {
-                                                    try {
-                                                        Element gelement = (Element) lnodes.item(l);
-                                                        switch (gelement.getNodeName()) {
-                                                            case "num":
-                                                                chnum = gelement.getTextContent();
-                                                                break;
-                                                            case "name":
-                                                                chname = gelement.getTextContent();
-                                                                break;
-                                                            case "des":
-                                                                des = gelement.getTextContent();
-                                                                break;
-                                                            case "incount":
-                                                                incount = gelement.getTextContent();
-                                                                break;
-                                                        }
-                                                    } catch (Exception e) {
-                                                        // TODO: handle exception
-                                                    }
-                                                }
-                                                chatFr.AddChatRoomB(chnum, chname, des, incount, chatFr.getView());
-                                            } catch (Exception e) {
-                                                // TODO: handle exception
-                                            }
-                                        }
-
-                                        break;
-                                    case "chatroomdes":
-                                        //cont = true;
-                                        String chnm = "";
-                                        String chdes = "";
-                                        String chincount = "";
-                                        NodeList cnodes = nodes.item(i).getChildNodes();
-                                        for (int j = 0; j < cnodes.getLength(); j++) {
-                                            try {
-                                                Element melement = (Element) cnodes.item(j);
-                                                switch (melement.getNodeName()) {
-                                                    case "name":
-                                                        chnm = melement.getTextContent();
-                                                        break;
-                                                    case "des":
-                                                        chdes = melement.getTextContent();
-                                                        break;
-                                                    case "incount":
-                                                        chincount = melement.getTextContent();
-                                                        break;
-                                                }
-                                            } catch (Exception e) {
-                                                // TODO: handle exception
-                                            }
-                                        }
-                                        chatFr.AddChatRoomD(chnm, chdes, chincount, Objects.requireNonNull(chatFr.getView()));
-                                        break;
-                                    case "mappoints":
-                                        Utils.mapP.clear();
-                                        Utils.mapC.clear();
-                                        NodeList mpnodes = nodes.item(i).getChildNodes();
-                                        for (int j = 0; j < mpnodes.getLength(); j++) {
-                                            try {
-                                                Element melement = (Element) mpnodes.item(j);
-                                                if ("mpt".equals(melement.getNodeName())) {
-                                                    Utils.mapC.add(melement.getAttribute("x") + ":" + melement.getAttribute("y"));
-                                                    Utils.mapP.add(melement.getAttribute("c"));
-                                                }
-
-                                            } catch (Exception e) {
-                                                // TODO: handle exception
-                                            }
-                                        }
-                                        break;
-                                    case "shop":
-                                        cmdFr.addLog("На данный момент данные возможности реализованы только в клиенте для Windows");
-                                        break;
-                                }
-                                break;
-                            case "Commands":
-                                commsFr.ClearButtc();
-                                gmFr.ClearButtc();
-                                NodeList mnodes = nodes.item(i).getChildNodes();
-                                for (int j = 0; j < mnodes.getLength(); j++) {
-                                    try {
-                                        String kay = "";
-                                        String ctxt = "";
-                                        NodeList gnodes = mnodes.item(j).getChildNodes();
-                                        for (int l = 0; l < gnodes.getLength(); l++) {
-                                            try {
-                                                Element gelement = (Element) gnodes.item(l);
-                                                switch (gelement.getNodeName()) {
-                                                    case "kay":
-                                                        kay = gelement.getTextContent();
-                                                        break;
-                                                    case "ctxt":
-                                                        ctxt = gelement.getTextContent();
-                                                        break;
-                                                }
-                                            } catch (Exception e) {
-                                                // TODO: handle exception
-                                            }
-                                        }
-                                        commsFr.AddButC(kay, ctxt, commsFr.getView());
-                                        gmFr.AddButC(kay, ctxt, gmFr.getView());
-                                    } catch (Exception e) {
-                                        // TODO: handle exception
-                                    }
-                                }
-                                //cont = true;
-                                break;
-                            case "Settings":
-                                if (Utils.flag) {
-                                    NodeList setnodes = nodes.item(i).getChildNodes();
-                                    for (int j = 0; (j < setnodes.getLength()) & Utils.flag; j++) {
+            for (int i = 0; i < nodes.getLength(); i++) {
+                try {
+                    Element element = (Element) nodes.item(i);
+                    switch (element.getNodeName()) {
+                        case "mess":
+                            switch (element.getAttribute("type")) {
+                                case "game":
+                                    cmdFr.addLog("--->");
+                                    ClearGLL();
+                                    NodeList mnodes = nodes.item(i).getChildNodes();
+                                    for (int j = 0; j < mnodes.getLength(); j++) {
                                         try {
-                                            Element setmelement = (Element) setnodes.item(j);
-                                            switch (setmelement.getNodeName()) {
-                                                case "Theme":
-                                                    switch (setmelement.getTextContent()) {
-                                                        case "Dark":
-                                                            Utils.isLight = false;
-                                                            break;
-                                                        case "Light":
-                                                            Utils.isLight = true;
-                                                            break;
-                                                    }
-
-                                                    break;
-                                                case "push_rdy":
-                                                    switch (setmelement.getTextContent()) {
-                                                        case "0":
-                                                            Utils.toastHpIsAcc = false;
-                                                            break;
-                                                        case "1":
-                                                            Utils.toastHpIsAcc = true;
-                                                            break;
-                                                    }
-
-                                                    break;
-                                                case "push_prmes":
-                                                    switch (setmelement.getTextContent()) {
-                                                        case "0":
-                                                            Utils.toastPrMesIsAcc = false;
-                                                            break;
-                                                        case "1":
-                                                            Utils.toastPrMesIsAcc = true;
-                                                            break;
-                                                    }
-
-                                                    break;
-                                                case "push_chmes":
-                                                    switch (setmelement.getTextContent()) {
-                                                        case "0":
-                                                            Utils.flag = false;
-                                                            if (!Utils.isLight) {
-                                                                Utils.changeToTheme(this, Utils.THEME_DARK);
-                                                                titlestrip.setTextColor(Color.WHITE);
-                                                                titlestrip.setBackgroundColor(Color.BLACK);
+                                            Element melement = (Element) mnodes.item(j);
+                                            switch (melement.getNodeName()) {
+                                                case "text":
+                                                    cmdFr.addLog(melement.getTextContent());
+                                                    gmFr.AddGText(melement.getTextContent(), gmFr.getView());
+                                                    NodeList lnodes = mnodes.item(j).getChildNodes();
+                                                    for (int l = 0; l < lnodes.getLength(); l++) {
+                                                        try {
+                                                            Element gelement = (Element) lnodes.item(l);
+                                                            if ("lynk".equals(gelement.getNodeName())) {
+                                                                AddLnkButt(gelement.getAttribute("text"), gelement.getAttribute("a"));
                                                             }
-                                                            break;
-                                                        case "1":
-                                                            Utils.flag = false;
-                                                            if (!Utils.isLight) {
-                                                                Utils.changeToTheme(this, Utils.THEME_DARK);
-                                                                titlestrip.setTextColor(Color.BLACK);
-                                                                titlestrip.setBackgroundColor(Color.WHITE);
+                                                        } catch (Exception e) {
+                                                            // TODO: handle exception
+                                                        }
+                                                    }
+                                                    break;
+                                                case "comm":
+                                                    String kay = "";
+                                                    String ctxt = "";
+                                                    NodeList gnodes = mnodes.item(j).getChildNodes();
+                                                    for (int l = 0; l < gnodes.getLength(); l++) {
+                                                        try {
+                                                            Element gelement = (Element) gnodes.item(l);
+                                                            switch (gelement.getNodeName()) {
+                                                                case "kay":
+                                                                    kay = gelement.getTextContent();
+                                                                    break;
+                                                                case "ctxt":
+                                                                    ctxt = gelement.getTextContent();
+                                                                    break;
                                                             }
+                                                        } catch (Exception e) {
+                                                            // TODO: handle exception
+                                                        }
+                                                    }
+                                                    gmFr.AddButG(kay, ctxt, gmFr.getView());
+                                                    cmdFr.addLog(kay + "- " + ctxt);
+                                                    //cont = true;
+                                                    break;
+                                                case "point":
+                                                    gmFr.UpdateMap(melement.getAttribute("x"), melement.getAttribute("y"), melement.getAttribute("code"),
+                                                            Objects.requireNonNull(gmFr.getView()));
+                                                    break;
+                                            }
+                                        } catch (Exception e) {
+                                            // TODO: handle exception
+                                        }
+                                    }
+                                case "chat":
+                                    //cont = true;
+                                    String from = "";
+                                    String mtext = "";
+                                    String dtime = "";
+                                    int tid = 1;
+                                    boolean totop;
+                                    NodeList cmnodes = nodes.item(i).getChildNodes();
+                                    for (int j = 0; j < cmnodes.getLength(); j++) {
+                                        try {
+                                            Element gelement = (Element) cmnodes.item(j);
+                                            switch (gelement.getNodeName()) {
+                                                case "from":
+                                                    from = gelement.getTextContent();
+                                                    break;
+                                                case "mtext":
+                                                    mtext = SpecialXmlEscapeEnc(gelement.getTextContent());
+                                                    break;
+                                                case "dtime":
+                                                    dtime = gelement.getTextContent();
+                                                    //if (dtime.indexOf("none") == 0) dtime = "";
+                                                    break;
+                                                case "mid":
+                                                    String ts = gelement.getTextContent();
+                                                    tid = Integer.parseInt(ts);
+                                                    //if (chatminid > tid) chatminid = tid;
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                        } catch (Exception e) {
+                                            // TODO: handle exception
+                                        }
+                                    }
+                                    if ((!from.equals("")) & (!mtext.equals(""))) {
+                                        try {
+                                            //histloadproc = false;
+                                            //callhistoryVisibility(Windows.UI.Xaml.Visibility.Collapsed);
+                                            totop = "1".equals(element.getAttribute("totop"));
+                                        } catch (Exception e) {
+                                            totop = false;
+                                        }
+
+                                        try {
+                                            chatFr.AddToChat(from, mtext, dtime,
+                                                    "private".equals(element.getAttribute("room")),
+                                                    totop, tid, chatFr.getView());
+                                        } catch (Exception ignored) {
+                                        }
+                                    }
+                                    break;
+                                case "chatrooms":
+                                    //cont = true;
+                                    chatFr.ChatClearAll(Objects.requireNonNull(chatFr.getView()));
+                                    NodeList crnodes = nodes.item(i).getChildNodes();
+                                    for (int j = 0; j < crnodes.getLength(); j++) {
+                                        try {
+                                            String chnum = "";
+                                            String chname = "";
+                                            String des = "";
+                                            String incount = "";
+                                            NodeList lnodes = crnodes.item(j).getChildNodes();
+                                            for (int l = 0; l < lnodes.getLength(); l++) {
+                                                try {
+                                                    Element gelement = (Element) lnodes.item(l);
+                                                    switch (gelement.getNodeName()) {
+                                                        case "num":
+                                                            chnum = gelement.getTextContent();
+                                                            break;
+                                                        case "name":
+                                                            chname = gelement.getTextContent();
+                                                            break;
+                                                        case "des":
+                                                            des = gelement.getTextContent();
+                                                            break;
+                                                        case "incount":
+                                                            incount = gelement.getTextContent();
                                                             break;
                                                     }
+                                                } catch (Exception e) {
+                                                    // TODO: handle exception
+                                                }
+                                            }
+                                            chatFr.AddChatRoomB(chnum, chname, des, incount, chatFr.getView());
+                                        } catch (Exception e) {
+                                            // TODO: handle exception
+                                        }
+                                    }
 
+                                    break;
+                                case "chatroomdes":
+                                    //cont = true;
+                                    String chnm = "";
+                                    String chdes = "";
+                                    String chincount = "";
+                                    NodeList cnodes = nodes.item(i).getChildNodes();
+                                    for (int j = 0; j < cnodes.getLength(); j++) {
+                                        try {
+                                            Element melement = (Element) cnodes.item(j);
+                                            switch (melement.getNodeName()) {
+                                                case "name":
+                                                    chnm = melement.getTextContent();
                                                     break;
+                                                case "des":
+                                                    chdes = melement.getTextContent();
+                                                    break;
+                                                case "incount":
+                                                    chincount = melement.getTextContent();
+                                                    break;
+                                            }
+                                        } catch (Exception e) {
+                                            // TODO: handle exception
+                                        }
+                                    }
+                                    chatFr.AddChatRoomD(chnm, chdes, chincount, Objects.requireNonNull(chatFr.getView()));
+                                    break;
+                                case "mappoints":
+                                    Utils.mapP.clear();
+                                    Utils.mapC.clear();
+                                    NodeList mpnodes = nodes.item(i).getChildNodes();
+                                    for (int j = 0; j < mpnodes.getLength(); j++) {
+                                        try {
+                                            Element melement = (Element) mpnodes.item(j);
+                                            if ("mpt".equals(melement.getNodeName())) {
+                                                Utils.mapC.add(melement.getAttribute("x") + ":" + melement.getAttribute("y"));
+                                                Utils.mapP.add(melement.getAttribute("c"));
                                             }
 
                                         } catch (Exception e) {
                                             // TODO: handle exception
                                         }
                                     }
-                                }
-                                break;
-                            case "perdata":
-                                NodeList pnodes = nodes.item(i).getChildNodes();
-                                for (int j = 0; j < pnodes.getLength(); j++) {
-                                    try {
-                                        Element gelement = (Element) pnodes.item(j);
-                                        switch (gelement.getNodeName()) {
-                                            case "pname":
-                                                gmFr.SetPname(gelement.getTextContent());
-                                                break;
-                                            case "plev":
-                                                gmFr.SetPlev(gelement.getAttribute("ldes"), gelement.getAttribute("lev"));
-                                                break;
-                                            case "php":
-                                                gmFr.SetPHP(gelement.getAttribute("hpdes"), gelement.getAttribute("hp"), gelement.getAttribute("hpmax"));
-                                                break;
-                                            case "psp":
-                                                gmFr.SetPSP(gelement.getAttribute("spdes"), gelement.getAttribute("sp"), gelement.getAttribute("spmax"));
-                                                break;
-                                            case "ppt":
-                                                gmFr.SetPPT(gelement.getAttribute("ptdes"), gelement.getAttribute("pt"), gelement.getAttribute("ptmax"));
-                                                break;
-                                            case "atten":
-                                                gmFr.SetAtten(gelement.getAttribute("on"));
-                                                break;
+                                    break;
+                                case "shop":
+                                    cmdFr.addLog("На данный момент данные возможности реализованы только в клиенте для Windows");
+                                    break;
+                            }
+                            break;
+                        case "Commands":
+                            commsFr.ClearButtc();
+                            gmFr.ClearButtc();
+                            NodeList mnodes = nodes.item(i).getChildNodes();
+                            for (int j = 0; j < mnodes.getLength(); j++) {
+                                try {
+                                    String kay = "";
+                                    String ctxt = "";
+                                    NodeList gnodes = mnodes.item(j).getChildNodes();
+                                    for (int l = 0; l < gnodes.getLength(); l++) {
+                                        try {
+                                            Element gelement = (Element) gnodes.item(l);
+                                            switch (gelement.getNodeName()) {
+                                                case "kay":
+                                                    kay = gelement.getTextContent();
+                                                    break;
+                                                case "ctxt":
+                                                    ctxt = gelement.getTextContent();
+                                                    break;
+                                            }
+                                        } catch (Exception e) {
+                                            // TODO: handle exception
                                         }
-                                    } catch (Exception e) {
-                                        // TODO: handle exception
+                                    }
+                                    commsFr.AddButC(kay, ctxt, commsFr.getView());
+                                    gmFr.AddButC(kay, ctxt, gmFr.getView());
+                                } catch (Exception e) {
+                                    // TODO: handle exception
+                                }
+                            }
+                            //cont = true;
+                            break;
+                        case "Settings":
+                            if (!Utils.flag){
+                                return;
+                            }
+                            NodeList setnodes = nodes.item(i).getChildNodes();
+                            for (int j = 0; (j < setnodes.getLength()) & Utils.flag; j++) {
+                                try {
+                                    Element setmelement = (Element) setnodes.item(j);
+                                    switch (setmelement.getNodeName()) {
+                                        case "Theme":
+                                            Utils.isLight = setmelement.getTextContent().equals("Light");
+                                            break;
+                                        case "push_rdy":
+                                            Utils.toastHpIsAcc = setmelement.getTextContent().equals("1");
+                                            break;
+                                        case "push_prmes":
+                                            Utils.toastPrMesIsAcc = setmelement.getTextContent().equals("1");;
+                                            break;
                                     }
                                 }
-                                //cont = true;
-                                break;
-                            case "error":
-                                cmdFr.addLog(element.getNodeValue());
-                                break;
-                        }
-                    } catch (Exception e) {
-                        // TODO: handle exception
+                                catch (Exception ignored) { }
+                            }
+                            break;
+                        case "perdata":
+                            NodeList pnodes = nodes.item(i).getChildNodes();
+                            for (int j = 0; j < pnodes.getLength(); j++) {
+                                try {
+                                    Element gelement = (Element) pnodes.item(j);
+                                    switch (gelement.getNodeName()) {
+                                        case "pname":
+                                            gmFr.SetPname(gelement.getTextContent());
+                                            break;
+                                        case "plev":
+                                            gmFr.SetPlev(gelement.getAttribute("ldes"), gelement.getAttribute("lev"));
+                                            break;
+                                        case "php":
+                                            gmFr.SetPHP(gelement.getAttribute("hpdes"), gelement.getAttribute("hp"), gelement.getAttribute("hpmax"));
+                                            break;
+                                        case "psp":
+                                            gmFr.SetPSP(gelement.getAttribute("spdes"), gelement.getAttribute("sp"), gelement.getAttribute("spmax"));
+                                            break;
+                                        case "ppt":
+                                            gmFr.SetPPT(gelement.getAttribute("ptdes"), gelement.getAttribute("pt"), gelement.getAttribute("ptmax"));
+                                            break;
+                                        case "atten":
+                                            gmFr.SetAtten(gelement.getAttribute("on"));
+                                            break;
+                                    }
+                                } catch (Exception e) {
+                                    // TODO: handle exception
+                                }
+                            }
+                            //cont = true;
+                            break;
+                        case "error":
+                            cmdFr.addLog(element.getNodeValue());
+                            break;
                     }
+                } catch (Exception e) {
+                    // TODO: handle exception
                 }
-            } catch (Exception e) {
-                // TODO: handle exception
-                cmdFr.addLog("Ошибка. Возможно следует проверить соединение интернет.");
-                //tabHost.setCurrentTabByTag(tabTags[3]);
             }
-            //ProgressBar pb = (ProgressBar) findViewById(R.id.progressBarMine);
-            //pb.setVisibility(View.INVISIBLE);
         }
+        catch (Exception e) {
+            // TODO: handle exception
+            cmdFr.addLog("Ошибка. Возможно следует проверить соединение интернет.");
+            //tabHost.setCurrentTabByTag(tabTags[3]);
+        }
+        //ProgressBar pb = (ProgressBar) findViewById(R.id.progressBarMine);
+        //pb.setVisibility(View.INVISIBLE);
     }
 
     public void SendComN(String cstr) {
@@ -657,9 +614,9 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
     private List<Fragment> getFragments() {
         List<Fragment> fList = new ArrayList<>();
 
-        fList.add(GameFragment.newInstance());
+        fList.add(GameFragment.newInstance("Игра"));
         fList.add(CommsFragment.newInstance("Команды"));
-        fList.add(ChatFragment.newInstance());
+        fList.add(ChatFragment.newInstance("Чат"));
         fList.add(CmdFragment.newInstance("Консоль"));
         return fList;
     }
@@ -750,6 +707,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
             this.fragments = fragments;
         }
 
+        @NonNull
         @Override
         public Fragment getItem(int position) {
             switch (position) {

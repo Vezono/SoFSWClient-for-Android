@@ -29,7 +29,7 @@ public class ChatFragment extends Fragment {
     private int chatMinId = 2147483647;
     private String nk = "";
 
-    public static ChatFragment newInstance() {
+    public static ChatFragment newInstance(String message) {
         return new ChatFragment();
     }
 

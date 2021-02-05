@@ -10,12 +10,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import java.util.Objects;
 
 public class CommsFragment extends Fragment {
-    public static final String EXTRA_MESSAGE = "EXTRA_MESSAGE";
     onSomeEventListenerCom someEventListener;
 
     public static CommsFragment newInstance(String message) {
@@ -24,7 +24,7 @@ public class CommsFragment extends Fragment {
 
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
             someEventListener = (onSomeEventListenerCom) context;
