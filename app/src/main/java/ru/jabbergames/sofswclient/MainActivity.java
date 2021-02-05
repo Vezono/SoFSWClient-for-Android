@@ -1,6 +1,5 @@
 package ru.jabbergames.sofswclient;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -61,8 +60,6 @@ import ru.jabbergames.sofswclient.GameFragment.onSomeEventListenerGm;
 
 public class MainActivity extends FragmentActivity implements onSomeEventListenerCh, onSomeEventListenerGm, onSomeEventListenerCom, onSomeEventListenerCmd {
 
-    // AsyncTask<?, ?, ?> runningTask;
-
     private static final int RC_SIGN_IN = 0;
     private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
     final String[] title = {"\uD83C\uDFAE ИГРА", "⚙️ КОМАНДЫ", "\uD83D\uDCAC ЧАТ", "\uD83D\uDD27 КОНСОЛЬ"};
@@ -76,8 +73,8 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
     CmdFragment cmdFr;
     MyPageAdapter pageAdapter;
     private String deviceId;
-    // private int STextEditID;
     private Timer mTimer;
+    
     private int tick = 0;
     private int tock = 0;
 
@@ -91,18 +88,15 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
             SendCom("getmappoints");
         }
 
-        // Configure sign-in to request the user's ID, email address, and basic
-        // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        /* GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
-        // Build a GoogleSignInClient with the options specified by gso.
         GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
+        startActivityForResult(signInIntent, RC_SIGN_IN); */
 
-        //setDeviceId("test@test.ru");
+        setDeviceId("test@test.ru");
 
         List<Fragment> fragments = getFragments();
         gmFr = (GameFragment) fragments.get(0);
@@ -110,26 +104,14 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
         chatFr = (ChatFragment) fragments.get(2);
         cmdFr = (CmdFragment) fragments.get(3);
         pageAdapter = new MyPageAdapter(getSupportFragmentManager(), fragments);
-        pager = findViewById(R.id.viewpager);
-        titlestrip = findViewById(R.id.titlestrip);
-        if (!Utils.isLight) {
-            pager.setBackgroundResource(R.drawable.background_d);
-            titlestrip.setTextColor(Color.WHITE);
-        } else {
-            pager.setBackgroundResource(R.drawable.background_l);
-            titlestrip.setTextColor(Color.BLACK);
-        }
-        titlestrip.setBackgroundColor(Color.TRANSPARENT);
-        pager.setPageTransformer(true, new ZoomOutPageTransformer());
-        pager.setAdapter(pageAdapter);
-        pager.setOffscreenPageLimit(4);
-        if (mTimer != null) {
-            mTimer.cancel();
-        }
+
+        pagerTasks();
+
+        if (mTimer != null) { mTimer.cancel(); }
         mTimer = new Timer();
         MyTimerTask mMyTimerTask = new MyTimerTask();
-
         mTimer.schedule(mMyTimerTask, 1100, 1100);
+
         SendCom("0");
     }
 
@@ -141,10 +123,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
-            // The Task returned from this call is always completed, no need to attach
-            // a listener.
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInResult(task);
         }
@@ -153,21 +132,34 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-
-            // Signed in successfully, show authenticated UI.
-            //updateUI(account);
-            // assert account != null;
             setDeviceId(account.getEmail() + "|" + account.getId());
-        } catch (ApiException e) {
-            // The ApiException status code indicates the detailed failure reason.
-            // Please refer to the GoogleSignInStatusCodes class reference for more information.
-            cmdFr.addLog("signInResult:failed code=" + e.getStatusCode() + " " + e.getMessage());
-            //updateUI(null);
+        }
+        catch (ApiException e) {
+            cmdFr.addLog(String.format("Ошибка входа в Google. Код ошибки: %s %s",
+                    e.getStatusCode(),
+                    e.getMessage()));
         }
     }
 
     public void isChatFr() {
         gmFr.setCountNewMessage(pager.getCurrentItem());
+    }
+
+    public void pagerTasks() {
+        pager = findViewById(R.id.viewpager);
+        titlestrip = findViewById(R.id.titlestrip);
+
+        if (!Utils.isLight) {
+            pager.setBackgroundResource(R.drawable.background_d);
+            titlestrip.setTextColor(Color.WHITE);
+        } else {
+            pager.setBackgroundResource(R.drawable.background_l);
+            titlestrip.setTextColor(Color.BLACK);
+        }
+        titlestrip.setBackgroundColor(Color.TRANSPARENT);
+        pager.setPageTransformer(true, new ZoomOutPageTransformer());
+        pager.setAdapter(pageAdapter);
+        pager.setOffscreenPageLimit(4);
     }
 
     public void ChangeTitle(boolean light) {
@@ -340,23 +332,19 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                             // TODO: handle exception
                                         }
                                     }
-                                    if ((!from.equals("")) & (!mtext.equals(""))) {
-                                        try {
-                                            //histloadproc = false;
-                                            //callhistoryVisibility(Windows.UI.Xaml.Visibility.Collapsed);
-                                            totop = "1".equals(element.getAttribute("totop"));
-                                        } catch (Exception e) {
-                                            totop = false;
-                                        }
 
-                                        try {
-                                            chatFr.AddToChat(from, mtext, dtime,
-                                                    "private".equals(element.getAttribute("room")),
-                                                    totop, tid, chatFr.getView());
-                                        } catch (Exception ignored) {
-                                        }
+                                    if ((from.equals("")) || (mtext.equals(""))) { break; }
+                                    try { totop = "1".equals(element.getAttribute("totop")); }
+                                    catch (Exception e) { totop = false; }
+
+                                    try {
+                                        chatFr.AddToChat(from, mtext, dtime,
+                                                "private".equals(element.getAttribute("room")),
+                                                totop, tid, chatFr.getView());
                                     }
+                                    catch (Exception ignored) { }
                                     break;
+
                                 case "chatrooms":
                                     //cont = true;
                                     chatFr.ChatClearAll(Objects.requireNonNull(chatFr.getView()));
@@ -385,16 +373,13 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                             incount = gelement.getTextContent();
                                                             break;
                                                     }
-                                                } catch (Exception e) {
-                                                    // TODO: handle exception
                                                 }
+                                                catch (Exception ignored) { }
                                             }
                                             chatFr.AddChatRoomB(chnum, chname, des, incount, chatFr.getView());
-                                        } catch (Exception e) {
-                                            // TODO: handle exception
                                         }
+                                        catch (Exception ignored) { }
                                     }
-
                                     break;
                                 case "chatroomdes":
                                     //cont = true;
@@ -444,6 +429,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                     break;
                             }
                             break;
+
                         case "Commands":
                             commsFr.ClearButtc();
                             gmFr.ClearButtc();
@@ -464,22 +450,24 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                     ctxt = gelement.getTextContent();
                                                     break;
                                             }
-                                        } catch (Exception e) {
+                                        }
+                                        catch (Exception e) {
                                             // TODO: handle exception
                                         }
                                     }
                                     commsFr.AddButC(kay, ctxt, commsFr.getView());
                                     gmFr.AddButC(kay, ctxt, gmFr.getView());
-                                } catch (Exception e) {
+                                }
+                                catch (Exception e) {
                                     // TODO: handle exception
                                 }
                             }
                             //cont = true;
                             break;
+
                         case "Settings":
-                            if (!Utils.flag){
-                                return;
-                            }
+                            if (!Utils.flag){ return; }
+
                             NodeList setnodes = nodes.item(i).getChildNodes();
                             for (int j = 0; (j < setnodes.getLength()) & Utils.flag; j++) {
                                 try {
@@ -524,9 +512,8 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                             gmFr.SetAtten(gelement.getAttribute("on"));
                                             break;
                                     }
-                                } catch (Exception e) {
-                                    // TODO: handle exception
                                 }
+                                catch (Exception ignored) { }
                             }
                             //cont = true;
                             break;
@@ -534,18 +521,13 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                             cmdFr.addLog(element.getNodeValue());
                             break;
                     }
-                } catch (Exception e) {
-                    // TODO: handle exception
                 }
+                catch (Exception ignored) { }
             }
         }
         catch (Exception e) {
-            // TODO: handle exception
             cmdFr.addLog("Ошибка. Возможно следует проверить соединение интернет.");
-            //tabHost.setCurrentTabByTag(tabTags[3]);
         }
-        //ProgressBar pb = (ProgressBar) findViewById(R.id.progressBarMine);
-        //pb.setVisibility(View.INVISIBLE);
     }
 
     public void SendComN(String cstr) {
