@@ -40,47 +40,45 @@ public class CommsFragment extends Fragment {
     }
 
     protected void ClearButtc() {
-        if (getView() != null) {
-            LinearLayout ll = getView().findViewById(R.id.ComButtLay);
-            ll.removeAllViewsInLayout();
-        }
+        if (getView() == null) { return; }
+        LinearLayout ll = getView().findViewById(R.id.ComButtLay);
+        ll.removeAllViewsInLayout();
     }
 
     protected void AddButC(String kay, String txt, View v) {
-        if (!Utils.flag) {
-            if (!Objects.equals(txt, "")) {
-                LinearLayout ll = v.findViewById(R.id.ComButtLay);
-                Button btn = new Button(getActivity());
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-                int marginInDp = (int) TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP, 3, getResources()
-                                .getDisplayMetrics());
-                lp.setMargins(marginInDp, marginInDp, marginInDp, marginInDp);
-                lp.width = LinearLayout.LayoutParams.MATCH_PARENT;
-                btn.setBackgroundColor(0x98838383);
-                btn.setLayoutParams(lp);
-                btn.setGravity(Gravity.START);
-                btn.setTransformationMethod(null);
-                btn.setText(txt);
-                btn.setTag(kay);
-                // создаем обработчик нажатия
-                View.OnClickListener oclBtnCmd = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String com = (String) v.getTag();
-                        someEventListener.SendCom(com);
-                        someEventListener.addLog(com);
-                        someEventListener.setCurrentIt(0);
-                    }
-                };
+        if (Utils.flag) { return; }
+        if (Objects.equals(txt, "")) { return; }
 
-                // присвоим обработчик кнопке
-                btn.setOnClickListener(oclBtnCmd);
-                ll.addView(btn);
+        LinearLayout ll = v.findViewById(R.id.ComButtLay);
+        Button btn = new Button(getActivity());
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        int marginInDp = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 3, getResources()
+                        .getDisplayMetrics());
+        lp.setMargins(marginInDp, marginInDp, marginInDp, marginInDp);
+        lp.width = LinearLayout.LayoutParams.MATCH_PARENT;
+        btn.setBackgroundColor(0x98838383);
+        btn.setLayoutParams(lp);
+        btn.setGravity(Gravity.START);
+        btn.setTransformationMethod(null);
+        btn.setText(txt);
+        btn.setTag(kay);
+        // создаем обработчик нажатия
+        View.OnClickListener oclBtnCmd = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String com = (String) v.getTag();
+                someEventListener.SendCom(com);
+                someEventListener.addLog(com);
+                someEventListener.setCurrentIt(0);
             }
-        }
+        };
+
+        // присвоим обработчик кнопке
+        btn.setOnClickListener(oclBtnCmd);
+        ll.addView(btn);
     }
 
     public interface onSomeEventListenerCom {
