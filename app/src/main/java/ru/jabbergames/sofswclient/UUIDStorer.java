@@ -1,6 +1,5 @@
 package ru.jabbergames.sofswclient;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,7 +14,9 @@ public class UUIDStorer {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         Cursor docs = db.rawQuery("SELECT uuid FROM uuids", null);
         if (!docs.moveToNext()){
-            UUID = genUUID(db);
+            genUUID(db);
+            db.close();
+            return getUUID(context);
         }
         else {
             UUID = docs.getString(0);
@@ -26,7 +27,7 @@ public class UUIDStorer {
 
     public static String genUUID(SQLiteDatabase db) {
         String newUUID = UUID.randomUUID().toString();
-        db.rawQuery("INSERT INTO uuids VALUES(" + newUUID +")", null);
+        db.rawQuery("INSERT INTO uuids VALUES(\"" + newUUID +"\")", null);
         return newUUID;
     }
 }
