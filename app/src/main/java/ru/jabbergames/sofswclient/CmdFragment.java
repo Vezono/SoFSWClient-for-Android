@@ -1,8 +1,7 @@
 package ru.jabbergames.sofswclient;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -13,39 +12,38 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.fragment.app.Fragment;
+
 import java.util.Objects;
 
 public class CmdFragment extends Fragment {
-    public interface onSomeEventListenerCmd {
-        void SendCom(String comstr);
-    }
-
     onSomeEventListenerCmd someEventListener;
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            someEventListener = (onSomeEventListenerCmd) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement onSomeEventListener");
-        }
-    }
-    int countLogMes=0;
+    int countLogMes = 0;
     View vv;
     Button btnCmdSend;
     Button btnCmdClear;
-    public static CmdFragment newInstance(String message)
-    {
+
+    public static CmdFragment newInstance(String message) {
         return new CmdFragment();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            someEventListener = (onSomeEventListenerCmd) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement onSomeEventListener");
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.activity_cmd, container, false);
-        vv=v;
+        vv = v;
         btnCmdSend = v.findViewById(R.id.cmdSendButton);
-        btnCmdClear= v.findViewById(R.id.cmdClearButton);
+        btnCmdClear = v.findViewById(R.id.cmdClearButton);
         // создаем обработчик нажатия
         View.OnClickListener oclBtnCmd = new View.OnClickListener() {
             @Override
@@ -102,18 +100,23 @@ public class CmdFragment extends Fragment {
 
         return v;
     }
+
     public void addLog(String addstr) {
         if (getView() != null) {
             TextView mCmdText = getView().findViewById(R.id.logTextView);
             if (mCmdText != null) {
                 mCmdText.append("\n\r" + addstr);
                 countLogMes++;
-                if(countLogMes>300){
+                if (countLogMes > 300) {
                     mCmdText.setText("");
-                    countLogMes=0;
+                    countLogMes = 0;
                 }
             }
         }
+    }
+
+    public interface onSomeEventListenerCmd {
+        void SendCom(String comstr);
     }
 
 }

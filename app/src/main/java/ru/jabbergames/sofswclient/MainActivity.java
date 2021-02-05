@@ -5,16 +5,16 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager.widget.PagerTabStrip;
-
-import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
+import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -56,32 +56,35 @@ import ru.jabbergames.sofswclient.ChatFragment.onSomeEventListenerCh;
 import ru.jabbergames.sofswclient.CmdFragment.onSomeEventListenerCmd;
 import ru.jabbergames.sofswclient.CommsFragment.onSomeEventListenerCom;
 import ru.jabbergames.sofswclient.GameFragment.onSomeEventListenerGm;
-public class MainActivity extends FragmentActivity implements onSomeEventListenerCh,onSomeEventListenerGm,onSomeEventListenerCom,onSomeEventListenerCmd {
+
+public class MainActivity extends FragmentActivity implements onSomeEventListenerCh, onSomeEventListenerGm, onSomeEventListenerCom, onSomeEventListenerCmd {
 
     // AsyncTask<?, ?, ?> runningTask;
 
     private static final int RC_SIGN_IN = 0;
-    private String deviceId;
-    // private int STextEditID;
-    private Timer mTimer;
-    PagerTabStrip titlestrip;
-    int countNewMessage=0;
+    private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
     final String[] title = {"\uD83C\uDFAE ИГРА", "⚙️ КОМАНДЫ", "\uD83D\uDCAC ЧАТ", "\uD83D\uDD27 КОНСОЛЬ"};
     private final List<String> ReqGm = new ArrayList<>();
-    private int tick = 0;
-    private int tock = 0;
+    PagerTabStrip titlestrip;
+    int countNewMessage = 0;
     ViewPager pager;
     GameFragment gmFr;
     ChatFragment chatFr;
     CommsFragment commsFr;
     CmdFragment cmdFr;
     MyPageAdapter pageAdapter;
+    private String deviceId;
+    // private int STextEditID;
+    private Timer mTimer;
+    private int tick = 0;
+    private int tock = 0;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Utils.onActivityCreateSetTheme(this);
         setContentView(R.layout.activity_main);
-        if(Utils.flag){
+        if (Utils.flag) {
             SendCom("getcomms");
             SendCom("getmappoints");
         }
@@ -100,18 +103,17 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
         //setDeviceId("test@test.ru");
 
         List<Fragment> fragments = getFragments();
-        gmFr=(GameFragment)fragments.get(0);
-        commsFr=(CommsFragment)fragments.get(1);
-        chatFr=(ChatFragment)fragments.get(2);
-        cmdFr=(CmdFragment)fragments.get(3);
+        gmFr = (GameFragment) fragments.get(0);
+        commsFr = (CommsFragment) fragments.get(1);
+        chatFr = (ChatFragment) fragments.get(2);
+        cmdFr = (CmdFragment) fragments.get(3);
         pageAdapter = new MyPageAdapter(getSupportFragmentManager(), fragments);
         pager = findViewById(R.id.viewpager);
-        titlestrip= findViewById(R.id.titlestrip);
-        if(!Utils.isLight){
+        titlestrip = findViewById(R.id.titlestrip);
+        if (!Utils.isLight) {
             pager.setBackgroundResource(R.drawable.background_d);
             titlestrip.setTextColor(Color.WHITE);
-        }
-        else{
+        } else {
             pager.setBackgroundResource(R.drawable.background_l);
             titlestrip.setTextColor(Color.BLACK);
         }
@@ -153,7 +155,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
             // Signed in successfully, show authenticated UI.
             //updateUI(account);
             assert account != null;
-            setDeviceId(account.getEmail()+"|"+account.getId());
+            setDeviceId(account.getEmail() + "|" + account.getId());
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
             // Please refer to the GoogleSignInStatusCodes class reference for more information.
@@ -162,58 +164,25 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
         }
     }
 
-    public  void isChatFr(){
+    public void isChatFr() {
         gmFr.setCountNewMessage(pager.getCurrentItem());
     }
 
-    public void ChangeTitle(boolean light){
-        if(light) {
+    public void ChangeTitle(boolean light) {
+        if (light) {
             titlestrip.setTextColor(Color.BLACK);
             titlestrip.setBackgroundColor(Color.TRANSPARENT);
-        }
-        else {
+        } else {
             titlestrip.setTextColor(Color.TRANSPARENT);
             titlestrip.setBackgroundColor(Color.BLACK);
         }
     }
+
     public void setCurrentIt(int i) {
         pager.setCurrentItem(i);
     }
 
-    class MyTimerTask extends TimerTask {
-        @Override
-        public void run() {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (getDeviceId() != null) {
-                        if (pager.getCurrentItem() == 2)
-                            gmFr.setCountNewMessage(2);
-                        if (ReqGm.size() != 0) { //(ReqCur == ReqCnt) {
-                            String com = ReqGm.get(0);
-                            SendComN(com);
-                            ReqGm.remove(0);
-                        } else {
-                            if (tick > 4) {
-                                SendComN("000");
-                                tick = 0;
-                                if(tock>5){
-                                    SendCom("getcomms");
-                                    tock = 0;
-                                } else{
-                                    tock += 1;
-                                }
-                            } else {
-                                tick += 1;
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    public void addLog(String s){
+    public void addLog(String s) {
         cmdFr.addLog(s);
     }
 
@@ -231,7 +200,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
         View.OnClickListener oclBtnCmd = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String com = (String)v.getTag();
+                String com = (String) v.getTag();
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(com));
                 startActivity(browserIntent);
             }
@@ -242,8 +211,6 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
 
         ll.addView(btn);
     }
-
-    private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
 
     public int generateViewId() {
         for (; ; ) {
@@ -258,11 +225,10 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
     }
 
     public void RespPars(String resp) {
-        if(resp.indexOf("error")==0){
+        if (resp.indexOf("error") == 0) {
             cmdFr.addLog("Ошибка. Проверьте, пожалуйста, соединение интернет.");
             //tabHost.setCurrentTabByTag(tabTags[3]);
-        }
-        else {
+        } else {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             try {
                 DocumentBuilder db = docFactory.newDocumentBuilder();
@@ -291,7 +257,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                 switch (melement.getNodeName()) {
                                                     case "text":
                                                         cmdFr.addLog(melement.getTextContent());
-                                                        gmFr.AddGText(melement.getTextContent(),gmFr.getView());
+                                                        gmFr.AddGText(melement.getTextContent(), gmFr.getView());
                                                         NodeList lnodes = mnodes.item(j).getChildNodes();
                                                         for (int l = 0; l < lnodes.getLength(); l++) {
                                                             try {
@@ -323,7 +289,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                                 // TODO: handle exception
                                                             }
                                                         }
-                                                        gmFr.AddButG(kay, ctxt,gmFr.getView());
+                                                        gmFr.AddButG(kay, ctxt, gmFr.getView());
                                                         cmdFr.addLog(kay + "- " + ctxt);
                                                         //cont = true;
                                                         break;
@@ -352,9 +318,6 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                     case "from":
                                                         from = gelement.getTextContent();
                                                         break;
-                                                    case "to":
-                                                        to = gelement.getTextContent();
-                                                        break;
                                                     case "mtext":
                                                         mtext = SpecialXmlEscapeEnc(gelement.getTextContent());
                                                         break;
@@ -374,7 +337,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                 // TODO: handle exception
                                             }
                                         }
-                                        if((!from.equals(""))&(!mtext.equals(""))) {
+                                        if ((!from.equals("")) & (!mtext.equals(""))) {
                                             try {
                                                 //histloadproc = false;
                                                 //callhistoryVisibility(Windows.UI.Xaml.Visibility.Collapsed);
@@ -387,7 +350,8 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                 chatFr.AddToChat(from, mtext, dtime,
                                                         "private".equals(element.getAttribute("room")),
                                                         totop, tid, chatFr.getView());
-                                            } catch (Exception ignored) {}
+                                            } catch (Exception ignored) {
+                                            }
                                         }
                                         break;
                                     case "chatrooms":
@@ -422,7 +386,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                         // TODO: handle exception
                                                     }
                                                 }
-                                                chatFr.AddChatRoomB(chnum, chname, des, incount,chatFr.getView());
+                                                chatFr.AddChatRoomB(chnum, chname, des, incount, chatFr.getView());
                                             } catch (Exception e) {
                                                 // TODO: handle exception
                                             }
@@ -501,8 +465,8 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                 // TODO: handle exception
                                             }
                                         }
-                                        commsFr.AddButC(kay, ctxt,commsFr.getView());
-                                        gmFr.AddButC(kay, ctxt,gmFr.getView());
+                                        commsFr.AddButC(kay, ctxt, commsFr.getView());
+                                        gmFr.AddButC(kay, ctxt, gmFr.getView());
                                     } catch (Exception e) {
                                         // TODO: handle exception
                                     }
@@ -510,19 +474,19 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                 //cont = true;
                                 break;
                             case "Settings":
-                                if(Utils.flag) {
+                                if (Utils.flag) {
                                     NodeList setnodes = nodes.item(i).getChildNodes();
-                                    for (int j = 0; (j < setnodes.getLength())&Utils.flag; j++) {
+                                    for (int j = 0; (j < setnodes.getLength()) & Utils.flag; j++) {
                                         try {
                                             Element setmelement = (Element) setnodes.item(j);
                                             switch (setmelement.getNodeName()) {
                                                 case "Theme":
                                                     switch (setmelement.getTextContent()) {
                                                         case "Dark":
-                                                            Utils.isLight=false;
+                                                            Utils.isLight = false;
                                                             break;
                                                         case "Light":
-                                                            Utils.isLight=true;
+                                                            Utils.isLight = true;
                                                             break;
                                                     }
 
@@ -530,10 +494,10 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                 case "push_rdy":
                                                     switch (setmelement.getTextContent()) {
                                                         case "0":
-                                                            Utils.toastHpIsAcc=false;
+                                                            Utils.toastHpIsAcc = false;
                                                             break;
                                                         case "1":
-                                                            Utils.toastHpIsAcc=true;
+                                                            Utils.toastHpIsAcc = true;
                                                             break;
                                                     }
 
@@ -541,10 +505,10 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                 case "push_prmes":
                                                     switch (setmelement.getTextContent()) {
                                                         case "0":
-                                                            Utils.toastPrMesIsAcc=false;
+                                                            Utils.toastPrMesIsAcc = false;
                                                             break;
                                                         case "1":
-                                                            Utils.toastPrMesIsAcc=true;
+                                                            Utils.toastPrMesIsAcc = true;
                                                             break;
                                                     }
 
@@ -552,19 +516,17 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
                                                 case "push_chmes":
                                                     switch (setmelement.getTextContent()) {
                                                         case "0":
-                                                            Utils.toastChMesIsAcc=false;
-                                                            Utils.flag=false;
-                                                            if(!Utils.isLight){
-                                                                Utils.changeToTheme(this,Utils.THEME_DARK);
+                                                            Utils.flag = false;
+                                                            if (!Utils.isLight) {
+                                                                Utils.changeToTheme(this, Utils.THEME_DARK);
                                                                 titlestrip.setTextColor(Color.WHITE);
                                                                 titlestrip.setBackgroundColor(Color.BLACK);
                                                             }
                                                             break;
                                                         case "1":
-                                                            Utils.toastChMesIsAcc=true;
-                                                            Utils.flag=false;
-                                                            if(!Utils.isLight){
-                                                                Utils.changeToTheme(this,Utils.THEME_DARK);
+                                                            Utils.flag = false;
+                                                            if (!Utils.isLight) {
+                                                                Utils.changeToTheme(this, Utils.THEME_DARK);
                                                                 titlestrip.setTextColor(Color.BLACK);
                                                                 titlestrip.setBackgroundColor(Color.WHITE);
                                                             }
@@ -629,8 +591,6 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
         }
     }
 
-
-
     public void SendComN(String cstr) {
         if (!cstr.equals("")) {
             //addLog("<---");
@@ -647,22 +607,18 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
 
     }
 
-    public String SpecialXmlEscapeEnc(String input)
-    {
+    public String SpecialXmlEscapeEnc(String input) {
         int p = input.indexOf(":amp:#");
         while (p > -1) {
-            try
-            {
+            try {
                 int e = input.indexOf(";", p);
                 String st = input.substring(p + 6, e);
                 int c = Integer.parseInt(st);
                 String pat = input.substring(p, e + 1);
-                char ch = (char)c;
+                char ch = (char) c;
                 String rep = String.valueOf(ch);
                 input = input.replace(pat, rep);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 int e = input.indexOf(";", p);
                 String st = input.substring(p + 6, e);
                 input = input.replace(":amp:#" + st + ";", "?");
@@ -673,48 +629,97 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
         return input;
     }
 
-    public String SpecialXmlEscape(String input)
-    {
+    public String SpecialXmlEscape(String input) {
         StringBuilder sb = new StringBuilder();
 
-        for (int i = 0; i < input.length(); ++i)
-        {
+        for (int i = 0; i < input.length(); ++i) {
             int c = input.charAt(i);
-            if ((c > 47 && c < 126) || (c > 31 && c < 38) || (c > 1024 && c < 1279) || (c==42)) sb.append(input.charAt(i)); else sb.append(":amp:#").append(c).append(";");
+            if ((c > 47 && c < 126) || (c > 31 && c < 38) || (c > 1024 && c < 1279) || (c == 42))
+                sb.append(input.charAt(i));
+            else sb.append(":amp:#").append(c).append(";");
         }
 
         return sb.toString();
     }
 
+    public String getDeviceId() {
+        return this.deviceId;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
+
+    public void SendCom(String comstr) {
+        ReqGm.add(ReqGm.size(), comstr);
+    }
+
+    private List<Fragment> getFragments() {
+        List<Fragment> fList = new ArrayList<>();
+
+        fList.add(GameFragment.newInstance());
+        fList.add(CommsFragment.newInstance("Команды"));
+        fList.add(ChatFragment.newInstance());
+        fList.add(CmdFragment.newInstance("Консоль"));
+        return fList;
+    }
+
+    class MyTimerTask extends TimerTask {
+        @Override
+        public void run() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (getDeviceId() != null) {
+                        if (pager.getCurrentItem() == 2)
+                            gmFr.setCountNewMessage(2);
+                        if (ReqGm.size() != 0) { //(ReqCur == ReqCnt) {
+                            String com = ReqGm.get(0);
+                            SendComN(com);
+                            ReqGm.remove(0);
+                        } else {
+                            if (tick > 4) {
+                                SendComN("000");
+                                tick = 0;
+                                if (tock > 5) {
+                                    SendCom("getcomms");
+                                    tock = 0;
+                                } else {
+                                    tock += 1;
+                                }
+                            } else {
+                                tick += 1;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
 
     class LongOperation extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String... params) {
-            String str="error";
+            String str = "error";
             HttpClient httpclient = new DefaultHttpClient();
             HttpPost httppost = new HttpPost("https://sofsw.jabbergames.ru/g.php");
 
-            try
-            {
+            try {
                 List<NameValuePair> nameValuePairs = new ArrayList<>();
                 nameValuePairs.add(new BasicNameValuePair("i", getDeviceId()));
                 nameValuePairs.add(new BasicNameValuePair("j", params[0]));
                 String clVer = "a.1.0.7.7";
                 nameValuePairs.add(new BasicNameValuePair("v", clVer));
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs,HTTP.UTF_8));
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs, HTTP.UTF_8));
                 HttpResponse response = httpclient.execute(httppost);
 
                 HttpEntity httpEntity = response.getEntity();
                 str = EntityUtils.toString(httpEntity, HTTP.UTF_8);
-            }
-            catch (ClientProtocolException e)
-            {
+            } catch (ClientProtocolException e) {
                 e.printStackTrace();
                 cmdFr.addLog("Подключение невозможно. Проверьте, пожалуйста, соединение интернет.");
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 e.printStackTrace();
                 cmdFr.addLog("Ошибка. Проверьте, пожалуйста, соединение интернет.");
             }
@@ -736,29 +741,6 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
         }
     }
 
-    public String getDeviceId() {
-        return this.deviceId;
-    }
-
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
-    }
-
-    public void SendCom(String comstr)
-    {
-        ReqGm.add(ReqGm.size(), comstr);
-    }
-
-    private List<Fragment> getFragments(){
-        List<Fragment> fList = new ArrayList<>();
-
-        fList.add(GameFragment.newInstance());
-        fList.add(CommsFragment.newInstance("Команды"));
-        fList.add(ChatFragment.newInstance());
-        fList.add(CmdFragment.newInstance("Консоль"));
-        return fList;
-    }
-
     private class MyPageAdapter extends FragmentPagerAdapter {
         private final List<Fragment> fragments;
 
@@ -767,14 +749,15 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
             super(fm);
             this.fragments = fragments;
         }
+
         @Override
         public Fragment getItem(int position) {
-            switch(position){
+            switch (position) {
                 case 1:
                     SendCom("getcomms");
                     return this.fragments.get(1);
                 case 2:
-                    countNewMessage=0;
+                    countNewMessage = 0;
                     gmFr.setCountNewMessage(1000);
                     return this.fragments.get(2);
                 case 3:

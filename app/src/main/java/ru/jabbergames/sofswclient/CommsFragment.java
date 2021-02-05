@@ -1,9 +1,7 @@
 package ru.jabbergames.sofswclient;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -12,28 +10,27 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
+import androidx.fragment.app.Fragment;
+
 import java.util.Objects;
 
 public class CommsFragment extends Fragment {
-    public interface onSomeEventListenerCom {
-        void addLog(String s);
-        void SendCom(String comstr);
-        void setCurrentIt(int i);
-    }
     public static final String EXTRA_MESSAGE = "EXTRA_MESSAGE";
     onSomeEventListenerCom someEventListener;
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            someEventListener = (onSomeEventListenerCom) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement onSomeEventListener");
-        }
-    }
-    public static CommsFragment newInstance(String message)
-    {
+
+    public static CommsFragment newInstance(String message) {
         return new CommsFragment();
+    }
+
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            someEventListener = (onSomeEventListenerCom) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement onSomeEventListener");
+        }
     }
 
     @Override
@@ -41,6 +38,7 @@ public class CommsFragment extends Fragment {
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.activity_com_buts, container, false);
     }
+
     protected void ClearButtc() {
         if (getView() != null) {
             LinearLayout ll = getView().findViewById(R.id.ComButtLay);
@@ -48,8 +46,8 @@ public class CommsFragment extends Fragment {
         }
     }
 
-    protected void AddButC(String kay, String txt,View v) {
-        if(!Utils.flag) {
+    protected void AddButC(String kay, String txt, View v) {
+        if (!Utils.flag) {
             if (!Objects.equals(txt, "")) {
                 LinearLayout ll = v.findViewById(R.id.ComButtLay);
                 Button btn = new Button(getActivity());
@@ -83,6 +81,14 @@ public class CommsFragment extends Fragment {
                 ll.addView(btn);
             }
         }
+    }
+
+    public interface onSomeEventListenerCom {
+        void addLog(String s);
+
+        void SendCom(String comstr);
+
+        void setCurrentIt(int i);
     }
 
 

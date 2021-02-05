@@ -1,4 +1,6 @@
 <resources>
+    <color name="light_color">#eeeeee</color>
+    <color name="dark_color">#333333</color>
     <string name="app_name">Камень судьбы. Второе дыхание.</string>
     <string name="title_activity_game">Игра</string>
     <string name="title_activity_com_buts">Команды</string>
@@ -10,8 +12,8 @@
     <string name="chatHint">сообщение</string>
     <string name="room_cnt_p">чел.</string>
     <string name="go">go</string>
-    <string name="room_cnt">"в комнате: "</string>
-    <string name="level_up_atten">" Распределите характеристики!"</string>
+    <string name="room_cnt">в комнате: </string>
+    <string name="level_up_atten"> Распределите характеристики!</string>
     <string name="chatMenuNickToMess">Ник в сообщение</string>
     <string name="chatMenuPrivateMess">Приватное сообщение</string>
     <string name="chatMenuPersInfo">Информация о персонаже</string>
@@ -19,6 +21,4 @@
     <string name="chatMenuClear">Очистить поля</string>
     <string name="ChatMessCounter">чат+</string>
     <string name="OK">OK</string>
-    <color name="light_color">#eeeeee</color>
-    <color name="dark_color">#333333</color>
 </resources>
