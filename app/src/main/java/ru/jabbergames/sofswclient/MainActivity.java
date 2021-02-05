@@ -1,5 +1,6 @@
 package ru.jabbergames.sofswclient;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -42,12 +43,15 @@ import org.w3c.dom.NodeList;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -95,8 +99,8 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
 
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN); */
-
-        setDeviceId("test@test.ru");
+        deviceId = UUIDStorer.getUUID(getApplicationContext());
+        setDeviceId(deviceId);
 
         List<Fragment> fragments = getFragments();
         gmFr = (GameFragment) fragments.get(0);
@@ -534,6 +538,7 @@ public class MainActivity extends FragmentActivity implements onSomeEventListene
         if (!cstr.equals("")) {
             //addLog("<---");
             new LongOperation() {
+                @SuppressLint("StaticFieldLeak")
                 @Override
                 public void onPostExecute(String result) {
                     RespPars(result);
